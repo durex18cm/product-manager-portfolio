@@ -1,0 +1,132 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #07120f;
+  color: #f7f4eb;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #07120f;
+  user-select: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.app-shell canvas {
+  cursor: grab;
+  touch-action: none;
+}
+
+.app-shell canvas:active {
+  cursor: grabbing;
+}
+
+.quiet-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease;
+}
+
+.quiet-overlay.is-entered {
+  opacity: 0;
+}
+
+.brand-pill {
+  position: fixed;
+  top: clamp(18px, 3vw, 38px);
+  left: clamp(18px, 3vw, 42px);
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  border: 1px solid rgba(232, 255, 239, 0.16);
+  border-radius: 999px;
+  background: rgba(4, 13, 10, 0.32);
+  color: rgba(247, 244, 235, 0.78);
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(12px);
+  animation: fadeChrome 4s ease 4.8s forwards;
+}
+
+.brand-pill span {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 34%, #fff 0 3px, transparent 3px),
+    radial-gradient(circle at 64% 58%, #fff 0 2px, transparent 2px),
+    radial-gradient(circle at 30% 66%, #fff 0 2px, transparent 2px),
+    #ed3e31;
+}
+
+.ambient-line {
+  position: fixed;
+  left: clamp(24px, 4vw, 56px);
+  bottom: clamp(34px, 6vw, 72px);
+  margin: 0;
+  color: rgba(247, 244, 235, 0.68);
+  font-size: 11px;
+  font-weight: 800;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.5);
+  animation: fadeChrome 4s ease 5.2s forwards;
+}
+
+.entry-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.7);
+  background: #07120f;
+  font-size: 13px;
+  font-weight: 800;
+  pointer-events: none;
+  animation: leaveLoader 1.25s ease 0.45s forwards;
+}
+
+@keyframes leaveLoader {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes fadeChrome {
+  to {
+    opacity: 0.28;
+  }
+}
+
+@media (max-width: 700px) {
+  .brand-pill {
+    left: 18px;
+    top: 18px;
+  }
+
+  .ambient-line {
+    left: 24px;
+    bottom: 42px;
+  }
+}
