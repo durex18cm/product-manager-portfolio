@@ -107,7 +107,7 @@ function CameraRig({ discovered, setDiscovered, entering, setEntering }) {
     const turnEnergy = Math.min(1, Math.abs(yawVelocity.current) * 0.9 + Math.abs(pitchVelocity.current) * 1.2);
     step.current += dt * (0.82 + moveSpeed * 8.5 + turnEnergy * 0.55);
     motionSignal.current = THREE.MathUtils.damp(motionSignal.current, Math.min(1, moveSpeed * 9 + turnEnergy * 0.42), 3.6, dt);
-    window.__forestMotion = motionSignal.current;
+    window.__forestMotion = Math.max(motionSignal.current, enter.current.value);
 
     const walk = motionSignal.current;
     const breathX = Math.sin(clock.current * 0.48) * 0.032 + Math.sin(step.current * 0.72) * 0.014 * walk;
@@ -145,6 +145,12 @@ function CameraRig({ discovered, setDiscovered, entering, setEntering }) {
   });
 
   React.useEffect(() => {
+    if (!entering) return undefined;
+    const tween = gsap.to(enter.current, { value: 1, duration: 2.6, ease: "power3.inOut" });
+    return () => tween.kill();
+  }, [entering]);
+
+  React.useEffect(() => {
     function onPointerMove(event) {
       if (drag.current) {
         yawTarget.current -= event.movementX * 0.0027;
@@ -162,10 +168,7 @@ function CameraRig({ discovered, setDiscovered, entering, setEntering }) {
       drag.current = true;
       event.target?.setPointerCapture?.(event.pointerId);
       if (document.pointerLockElement) document.exitPointerLock?.();
-      if (discovered && !entering) {
-        setEntering(true);
-        gsap.to(enter.current, { value: 1, duration: 2.6, ease: "power3.inOut" });
-      }
+      if (discovered && !entering) setEntering(true);
     }
 
     function onPointerUp() {
@@ -619,7 +622,7 @@ function SporeField({ discovered }) {
   );
 }
 
-function BlueEntranceParticles({ discovered }) {
+function BlueEntranceParticles({ discovered, entering }) {
   const uniforms = useMemo(() => ({ uTime: { value: 0 }, uActivity: { value: 0 } }), []);
   const data = useMemo(() => {
     const count = 260;
@@ -643,7 +646,7 @@ function BlueEntranceParticles({ discovered }) {
 
   useFrame((_, delta) => {
     uniforms.uTime.value += delta;
-    uniforms.uActivity.value = THREE.MathUtils.damp(uniforms.uActivity.value, discovered ? 1 : 0.18, 2.8, delta);
+    uniforms.uActivity.value = THREE.MathUtils.damp(uniforms.uActivity.value, entering ? 2.35 : discovered ? 1 : 0.18, 2.8, delta);
   });
 
   return (
@@ -668,15 +671,19 @@ function BlueEntranceParticles({ discovered }) {
           void main() {
             vPhase = aPhase;
             vec3 p = position;
+            float portal = smoothstep(1.0, 2.35, uActivity);
             float slow = sin(uTime * 0.85 + aPhase);
             float driftRing = 0.055 + uActivity * 0.12;
-            p.xz *= 1.0 + slow * driftRing;
+            float spin = uTime * (0.35 + portal * 2.15) + aPhase * (0.35 + portal * 1.6);
+            mat2 vortex = mat2(cos(spin), -sin(spin), sin(spin), cos(spin));
+            p.xz = mix(p.xz, vortex * p.xz, portal);
+            p.xz *= mix(1.0 + slow * driftRing, 0.28 + sin(uTime * 2.1 + aPhase) * 0.05, portal * 0.78);
             p.x += sin(uTime * 0.65 + aPhase * 1.7) * 0.12;
             p.z += cos(uTime * 0.5 + aPhase * 1.2) * 0.12;
-            p.y += slow * 0.1 + uActivity * 0.05;
+            p.y += slow * 0.1 + uActivity * 0.05 + portal * sin(uTime * 2.4 + aPhase) * 0.34;
             vec4 mv = modelViewMatrix * vec4(p, 1.0);
-            gl_PointSize = aSize * (88.0 / -mv.z) * (1.0 + uActivity * 0.36);
-            vAlpha = 0.34 + uActivity * 0.42;
+            gl_PointSize = aSize * (88.0 / -mv.z) * (1.0 + uActivity * 0.36 + portal * 0.64);
+            vAlpha = 0.34 + uActivity * 0.42 + portal * 0.36;
             gl_Position = projectionMatrix * mv;
           }
         `}
@@ -701,8 +708,8 @@ function BlueEntranceParticles({ discovered }) {
   );
 }
 
-function BlueEntranceMushroom({ discovered }) {
-  const { camera } = useThree();
+function BlueEntranceMushroom({ discovered, entering, onEnter }) {
+  const { camera, gl } = useThree();
   const group = useRef();
   const billboard = useRef();
   const halo = useRef();
@@ -715,41 +722,71 @@ function BlueEntranceMushroom({ discovered }) {
 
   useFrame(({ clock }, delta) => {
     if (!group.current) return;
-    activity.current = THREE.MathUtils.damp(activity.current, discovered ? 1 : 0, 2.5, delta);
+    activity.current = THREE.MathUtils.damp(activity.current, entering ? 2.35 : discovered ? 1 : 0, 2.5, delta);
     const t = clock.elapsedTime;
     const breath = 0.68 + Math.sin(t * 1.18) * 0.22 + Math.sin(t * 3.9) * 0.035;
     const flicker = 0.94 + Math.sin(t * 7.1) * 0.035 + Math.sin(t * 11.4) * 0.018;
     const reveal = activity.current;
-    group.current.scale.setScalar(0.66 * (1 + reveal * 0.08 + breath * 0.04));
+    const portal = Math.max(0, reveal - 1);
+    group.current.scale.setScalar(0.66 * (1 + reveal * 0.08 + portal * 0.16 + breath * 0.04));
     billboardUniforms.uTime.value = t;
-    billboardUniforms.uOpacity.value = (0.028 + breath * 0.018 + reveal * 0.034) * flicker;
+    billboardUniforms.uOpacity.value = (0.028 + breath * 0.018 + reveal * 0.034 + portal * 0.09) * flicker;
 
     if (coreLight.current) {
-      coreLight.current.intensity = (3.2 + reveal * 5.3 + breath * 1.6) * flicker;
-      coreLight.current.distance = 7.2 + reveal * 4.2 + breath * 1.5;
+      coreLight.current.intensity = (3.2 + reveal * 5.3 + portal * 9 + breath * 1.6) * flicker;
+      coreLight.current.distance = 7.2 + reveal * 4.2 + portal * 7 + breath * 1.5;
     }
     if (rimLight.current) {
-      rimLight.current.intensity = (1.25 + reveal * 2.2) * flicker;
+      rimLight.current.intensity = (1.25 + reveal * 2.2 + portal * 4.5) * flicker;
     }
     if (halo.current) {
-      halo.current.scale.setScalar(0.9 + breath * 0.28 + reveal * 0.24);
-      halo.current.material.opacity = 0.05 + breath * 0.034 + reveal * 0.045;
+      halo.current.scale.setScalar(0.9 + breath * 0.28 + reveal * 0.24 + portal * 0.52);
+      halo.current.material.opacity = 0.05 + breath * 0.034 + reveal * 0.045 + portal * 0.08;
       halo.current.material.color.setHSL(0.58 + breath * 0.035, 1, 0.56 + reveal * 0.08);
     }
     if (outerHalo.current) {
-      outerHalo.current.scale.setScalar(1.05 + breath * 0.36 + reveal * 0.36);
-      outerHalo.current.material.opacity = 0.012 + breath * 0.014 + reveal * 0.02;
+      outerHalo.current.scale.setScalar(1.05 + breath * 0.36 + reveal * 0.36 + portal * 0.86);
+      outerHalo.current.material.opacity = 0.012 + breath * 0.014 + reveal * 0.02 + portal * 0.052;
     }
     if (capGlow.current) {
-      capGlow.current.material.emissiveIntensity = 0.7 + breath * 0.42 + reveal * 0.55;
+      capGlow.current.material.emissiveIntensity = 0.7 + breath * 0.42 + reveal * 0.55 + portal * 1.25;
     }
     if (billboard.current) {
       billboard.current.quaternion.copy(camera.quaternion);
     }
   });
 
+  const handleEnter = React.useCallback(
+    (event) => {
+      event.stopPropagation();
+      if (!entering) onEnter();
+    },
+    [entering, onEnter]
+  );
+  const handlePointerOver = React.useCallback(
+    (event) => {
+      event.stopPropagation();
+      if (!entering) gl.domElement.style.cursor = "pointer";
+    },
+    [entering, gl.domElement]
+  );
+  const handlePointerOut = React.useCallback(() => {
+    gl.domElement.style.cursor = "";
+  }, [gl.domElement]);
+
   return (
-    <group ref={group} position={[SECRET.x, 0.05, SECRET.z]} rotation-y={-0.38}>
+    <group
+      ref={group}
+      position={[SECRET.x, 0.05, SECRET.z]}
+      rotation-y={-0.38}
+      onClick={handleEnter}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+    >
+      <mesh position={[0, 1.18, 0]} scale={[2.25, 1.95, 2.25]}>
+        <sphereGeometry args={[1, 24, 16]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
       <pointLight ref={coreLight} position={[0, 1.6, 0]} color="#79d4ff" intensity={4} distance={9} decay={1.55} />
       <pointLight ref={rimLight} position={[-1.2, 0.82, 0.75]} color="#6b6dff" intensity={1.6} distance={5.8} decay={1.8} />
       <mesh position={[0, 0.64, 0]}>
@@ -824,7 +861,7 @@ function BlueEntranceMushroom({ discovered }) {
           `}
         />
       </mesh>
-      <BlueEntranceParticles discovered={discovered} />
+      <BlueEntranceParticles discovered={discovered} entering={entering} />
     </group>
   );
 }
@@ -1415,7 +1452,7 @@ function ForestScene({ discovered, setDiscovered, entering, setEntering }) {
       <VolumetricMist />
       <SporeField discovered={discovered} />
       <GrassSilhouettes />
-      <BlueEntranceMushroom discovered={discovered} />
+      <BlueEntranceMushroom discovered={discovered} entering={entering} onEnter={() => setEntering(true)} />
       <Environment preset="forest" environmentIntensity={0.27} />
       <EffectComposer multisampling={0}>
         <Bloom luminanceThreshold={0.58} intensity={0.15} mipmapBlur />
@@ -1425,13 +1462,185 @@ function ForestScene({ discovered, setDiscovered, entering, setEntering }) {
   );
 }
 
-function App() {
-  const captureMode = new URLSearchParams(window.location.search).has("capture");
-  const [discovered, setDiscovered] = useState(false);
-  const [entering, setEntering] = useState(false);
+function WorksPortal({ active }) {
+  const works = [
+    {
+      number: "01",
+      title: ["SMS Verification", "System"],
+      subtitle: "短信验证码系统",
+      className: "node-blue",
+      style: { "--x": "-28.8%", "--y": "50%" },
+    },
+    {
+      number: "02",
+      title: ["AI Short Drama", "Platform"],
+      subtitle: "AI短剧创作平台",
+      className: "node-gold",
+      style: { "--x": "0%", "--y": "39%" },
+    },
+    {
+      number: "03",
+      title: ["Cosmos Particle", "Exploration"],
+      subtitle: "宇宙粒子探索",
+      className: "node-violet",
+      style: { "--x": "28.8%", "--y": "50%" },
+    },
+  ];
+  const leaves = Array.from({ length: 132 }, (_, index) => {
+    const angle = index * 2.399963 + (index % 7) * 0.08;
+    const radius = 7 + (index % 16) * 2.05;
+    return {
+      cx: 50 + Math.cos(angle) * radius * 1.18,
+      cy: 29 + Math.sin(angle) * radius * 0.68,
+      r: 0.82 + (index % 5) * 0.22,
+      delay: `${-(index % 17) * 0.18}s`,
+    };
+  });
 
   return (
-    <main className="app-shell">
+    <section className={`works-portal ${active ? "is-active" : ""}`} aria-hidden={!active}>
+      <div className="works-card">
+        <div className="works-bg" />
+        <div className="works-rays" />
+        <div className="works-fireflies" aria-hidden="true" />
+        <div className="works-tree" aria-hidden="true">
+          <svg className="works-tree-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="worksTrunk" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#b4a456" />
+                <stop offset="48%" stopColor="#33401f" />
+                <stop offset="100%" stopColor="#0d1612" />
+              </linearGradient>
+              <filter id="treeSoftGlow">
+                <feGaussianBlur stdDeviation="1.35" />
+              </filter>
+            </defs>
+            <path className="tree-glow" d="M50 7 C34 7 21 16 17 31 C11 48 23 62 37 64 C43 73 58 74 65 64 C80 63 92 50 87 33 C83 17 67 7 50 7 Z" />
+            <path className="tree-trunk-main" d="M48 94 C47 77 48 61 50 47 C51 35 49 26 45 16 C51 26 55 35 54 48 C58 62 56 78 53 94 Z" />
+            <path className="tree-branch branch-left" d="M50 49 C38 43 29 36 16 35" />
+            <path className="tree-branch branch-right" d="M51 47 C63 39 73 33 87 31" />
+            <path className="tree-branch branch-up-left" d="M50 42 C43 32 36 24 25 18" />
+            <path className="tree-branch branch-up-right" d="M52 42 C61 30 68 21 79 15" />
+            <path className="tree-branch branch-low-left" d="M50 57 C39 56 30 58 20 63" />
+            <path className="tree-branch branch-low-right" d="M52 57 C64 55 74 57 84 62" />
+            <g className="tree-leaves">
+              {leaves.map((leaf, index) => (
+                <circle key={index} cx={leaf.cx} cy={leaf.cy} r={leaf.r} style={{ animationDelay: leaf.delay }} />
+              ))}
+            </g>
+            <circle className="tree-core-light" cx="50" cy="49" r="3.8" filter="url(#treeSoftGlow)" />
+          </svg>
+        </div>
+        <div className="works-ground" />
+        {works.map((work) => (
+          <article key={work.number} className={`work-node ${work.className}`} style={work.style}>
+            <div className="work-copy">
+              <strong>{work.number}</strong>
+              {work.title.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+              <small>{work.subtitle}</small>
+            </div>
+            <div className="hanging-thread" />
+            <button className="work-orb" aria-label={`${work.number} ${work.title.join(" ")}`}>
+              <i />
+            </button>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CinematicTransition({ active }) {
+  const motes = React.useMemo(
+    () =>
+      Array.from({ length: 34 }, (_, index) => ({
+        style: {
+          "--x": `${12 + ((index * 19) % 78)}%`,
+          "--y": `${14 + ((index * 31) % 72)}%`,
+          "--size": `${4 + (index % 5) * 1.2}px`,
+          "--scale": `${0.75 + (index % 5) * 0.16}`,
+          "--d": `${-(index % 9) * 0.19}s`,
+          "--a": `${index * 23}deg`,
+        },
+      })),
+    []
+  );
+  const shards = React.useMemo(
+    () =>
+      Array.from({ length: 22 }, (_, index) => ({
+        style: {
+          "--x": `${8 + ((index * 37) % 84)}%`,
+          "--y": `${20 + ((index * 17) % 62)}%`,
+          "--r": `${index * 29}deg`,
+          "--d": `${index * 0.045}s`,
+        },
+      })),
+    []
+  );
+
+  if (!active) return null;
+
+  return (
+    <div className="cinematic-transition" aria-hidden="true">
+      <div className="transition-stage transition-wake">
+        <div className="wake-bloom" />
+        <div className="wake-pulse" />
+      </div>
+      <div className="transition-stage transition-vortex">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="transition-stage transition-dissolve">
+        {shards.map((shard, index) => (
+          <i key={index} style={shard.style} />
+        ))}
+      </div>
+      <div className="transition-stage transition-between">
+        <div className="void-bands" />
+        <div className="guide-spore" />
+        <div className="spore-halo" />
+      </div>
+      <div className="transition-stage transition-rebuild">
+        <div className="tree-silhouette" />
+        <div className="rebuild-light" />
+      </div>
+      <div className="transition-motes">
+        {motes.map((mote, index) => (
+          <i key={index} style={mote.style} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const params = new URLSearchParams(window.location.search);
+  const captureMode = params.has("capture");
+  const debugWorks = params.has("debugWorks");
+  const debugTransition = params.has("debugTransition");
+  const [discovered, setDiscovered] = useState(false);
+  const [entering, setEntering] = useState(debugWorks || debugTransition);
+  const [showWorks, setShowWorks] = useState(debugWorks);
+  const [transitionDone, setTransitionDone] = useState(debugWorks);
+
+  React.useEffect(() => {
+    if (!entering || showWorks) return undefined;
+    const timer = window.setTimeout(() => setShowWorks(true), 5200);
+    return () => window.clearTimeout(timer);
+  }, [entering, showWorks]);
+
+  React.useEffect(() => {
+    if (!entering || debugWorks) return undefined;
+    setTransitionDone(false);
+    const timer = window.setTimeout(() => setTransitionDone(true), 7200);
+    return () => window.clearTimeout(timer);
+  }, [debugWorks, entering]);
+
+  return (
+    <main className={`app-shell ${showWorks ? "has-works" : ""}`}>
       <Canvas
         camera={{ fov: 54, near: 0.1, far: 130, position: [0, 1.62, 0] }}
         dpr={[1, 1.75]}
@@ -1445,6 +1654,8 @@ function App() {
         <div className="brand-pill"><span />Dream Grove</div>
         <p className="ambient-line">{discovered ? "Something glows deeper in the forest" : "Digital forest space"}</p>
       </div>
+      <WorksPortal active={showWorks} />
+      <CinematicTransition active={entering && !transitionDone && !debugWorks} />
       {!captureMode && <div className="entry-loader">Entering forest space</div>}
     </main>
   );
