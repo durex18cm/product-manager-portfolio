@@ -1463,6 +1463,8 @@ function ForestScene({ discovered, setDiscovered, entering, setEntering }) {
 }
 
 function WorksPortal({ active }) {
+  const [openingWork, setOpeningWork] = useState(null);
+  const openingTimer = useRef(null);
   const works = [
     {
       number: "01",
@@ -1470,6 +1472,7 @@ function WorksPortal({ active }) {
       subtitle: "短信验证码系统",
       className: "node-blue",
       style: { "--x": "-28.8%", "--y": "50%" },
+      href: "/prototypes/verification_code_login/index.html",
     },
     {
       number: "02",
@@ -1477,6 +1480,7 @@ function WorksPortal({ active }) {
       subtitle: "AI短剧创作平台",
       className: "node-gold",
       style: { "--x": "0%", "--y": "39%" },
+      href: "/prototypes/interactive_short_drama/index.html",
     },
     {
       number: "03",
@@ -1484,6 +1488,7 @@ function WorksPortal({ active }) {
       subtitle: "宇宙粒子探索",
       className: "node-violet",
       style: { "--x": "28.8%", "--y": "50%" },
+      href: "/prototypes/singularity_engine/index.html",
     },
   ];
   const leaves = Array.from({ length: 132 }, (_, index) => {
@@ -1497,12 +1502,56 @@ function WorksPortal({ active }) {
     };
   });
 
+  React.useEffect(() => () => window.clearTimeout(openingTimer.current), []);
+
+  function openWork(event, work) {
+    if (!work.href) return;
+    if (!["01", "02"].includes(work.number)) return;
+    event.preventDefault();
+    if (openingWork) return;
+    setOpeningWork(work.number);
+    openingTimer.current = window.setTimeout(() => {
+      window.location.href = work.href;
+    }, 3000);
+  }
+
   return (
-    <section className={`works-portal ${active ? "is-active" : ""}`} aria-hidden={!active}>
+    <section className={`works-portal ${active ? "is-active" : ""} ${openingWork === "01" ? "is-opening-blue" : ""} ${openingWork === "02" ? "is-opening-gold" : ""}`} aria-hidden={!active}>
       <div className="works-card">
+        <a
+          className="works-back"
+          href="/index.html"
+          aria-label="返回森林蘑菇界面"
+          onClick={(event) => {
+            event.preventDefault();
+            window.location.href = "/index.html";
+          }}
+        >
+          返回森林
+        </a>
         <div className="works-bg" />
         <div className="works-rays" />
         <div className="works-fireflies" aria-hidden="true" />
+        {openingWork === "01" && (
+          <div className="fruit-world-release" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+        )}
+        {openingWork === "02" && (
+          <div className="life-world-release" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <b>SCENE</b>
+            <b>DIALOGUE</b>
+            <b>角色</b>
+            <b>分镜</b>
+            <i />
+            <i />
+          </div>
+        )}
         <div className="works-tree" aria-hidden="true">
           <svg className="works-tree-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
             <defs>
@@ -1533,7 +1582,7 @@ function WorksPortal({ active }) {
         </div>
         <div className="works-ground" />
         {works.map((work) => (
-          <article key={work.number} className={`work-node ${work.className}`} style={work.style}>
+          <article key={work.number} className={`work-node ${work.className} ${openingWork === work.number ? "is-opening" : ""}`} style={work.style}>
             <div className="work-copy">
               <strong>{work.number}</strong>
               {work.title.map((line) => (
@@ -1542,9 +1591,18 @@ function WorksPortal({ active }) {
               <small>{work.subtitle}</small>
             </div>
             <div className="hanging-thread" />
-            <button className="work-orb" aria-label={`${work.number} ${work.title.join(" ")}`}>
-              <i />
-            </button>
+            {work.href ? (
+              <a className="work-orb" href={work.href} aria-label={`${work.number} ${work.title.join(" ")}`} onClick={(event) => openWork(event, work)}>
+                <i />
+                <span className="fruit-crack" aria-hidden="true" />
+                <span className="fruit-beam" aria-hidden="true" />
+                <span className="fruit-vortex" aria-hidden="true" />
+              </a>
+            ) : (
+              <button className="work-orb" type="button" aria-label={`${work.number} ${work.title.join(" ")}`}>
+                <i />
+              </button>
+            )}
           </article>
         ))}
       </div>

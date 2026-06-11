@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短剧互动高保真原型</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft Yahei",sans-serif}
+        body{background:#0a0a0a;color:#fff;padding:20px;min-height:100vh}
+        .container{max-width:420px;margin:0 auto;background:#141414;border-radius:16px;overflow:hidden;box-shadow:0 0 30px rgba(255,60,80,0.2)}
+        .video-box{width:100%;height:240px;background:#222;position:relative}
+        .video-cover{width:100%;height:100%;object-fit:cover}
+        .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff}
+        .content{padding:20px}
+        .title{font-size:20px;font-weight:bold;margin-bottom:12px;color:#ff4c60}
+        .story-text{font-size:15px;line-height:1.7;color:#ddd;margin-bottom:24px;min-height:80px}
+        .btn-group{display:flex;flex-direction:column;gap:12px}
+        .choice-btn{width:100%;padding:14px 16px;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;transition:all 0.2s}
+        .btn-1{background:linear-gradient(90deg,#ff4c60,#ff7080);color:#fff}
+        .btn-2{background:#2a2a2a;color:#fff;border:1px solid #444}
+        .reset-btn{margin-top:20px;background:#333;color:#aaa;padding:10px;border-radius:8px;border:none;cursor:pointer;font-size:14px}
+        .end-tip{color:#ffcc00;font-weight:bold;text-align:center;margin:20px 0;font-size:16px}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 短剧画面区域 -->
+        <div class="video-box">
+            <img class="video-cover" src="https://img0.baidu.com/it/u=1329882999,3829332123&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=400" alt="短剧封面">
+            <div class="play-icon">▶</div>
+        </div>
+        <!-- 剧情+选择区域 -->
+        <div class="content">
+            <h2 class="title" id="title">第1集：雨夜惊魂</h2>
+            <p class="story-text" id="story">深夜雨夜，你独自走在小巷，身后突然传来急促的脚步声，一个黑影快速靠近你，你决定...</p>
+            <div class="btn-group" id="btns">
+                <button class="choice-btn btn-1" onclick="changeStory(1)">立刻转身质问对方</button>
+                <button class="choice-btn btn-2" onclick="changeStory(2)">快速往前逃跑</button>
+            </div>
+            <button class="reset-btn" onclick="resetStory()">重置剧情（回到第1集）</button>
+        </div>
+    </div>
+
+    <script>
+        // 剧情库：id对应分支，title标题，text剧情，choices按钮
+        const storyData = {
+            1: {
+                title: "第1集：雨夜惊魂",
+                text: "深夜雨夜，你独自走在小巷，身后突然传来急促的脚步声，一个黑影快速靠近你，你决定...",
+                choices: [
+                    {txt:"立刻转身质问对方",next:2},
+                    {txt:"快速往前逃跑",next:3}
+                ]
+            },
+            2: {
+                title: "分支A：直面黑影",
+                text: "你猛地转身，黑影停下脚步，摘下帽子，竟然是失踪3年的前男友，他眼神凶狠地盯着你...",
+                choices: [
+                    {txt:"质问他为什么跟踪你",next:4},
+                    {txt:"害怕后退，想要离开",next:5}
+                ]
+            },
+            3: {
+                title: "分支B：仓皇逃跑",
+                text: "你拼命往前跑，黑影在身后穷追不舍，前方出现一个废弃楼道，你躲进去还是继续跑？",
+                choices: [
+                    {txt:"躲进废弃楼道",next:6},
+                    {txt:"跑到大街求救",next:7}
+                ]
+            },
+            4: {title:"结局1：真相浮现",text:"他说出当年失踪的真相，原来一直暗中保护你，剧情圆满！",choices:[]},
+            5: {title:"结局2：悲剧收场",text:"他情绪失控对你下手，故事结束。",choices:[]},
+            6: {title:"结局3：被困险境",text:"楼道内布满陷阱，你被困其中，危险升级。",choices:[]},
+            7: {title:"结局4：安全获救",text:"跑到大街遇到巡逻警察，黑影逃走，你安全了！",choices:[]}
+        };
+
+        // 切换剧情
+        function changeStory(id){
+            const s = storyData[id];
+            document.getElementById("title").innerText = s.title;
+            document.getElementById("story").innerText = s.text;
+            const btnWrap = document.getElementById("btns");
+            btnWrap.innerHTML = "";
+            // 无按钮=结局
+            if(s.choices.length===0){
+                btnWrap.innerHTML = `<div class="end-tip">✅ 本剧情结局已结束</div>`;
+                return;
+            }
+            // 生成选择按钮
+            s.choices.forEach((item,idx)=>{
+                const btn = document.createElement("button");
+                btn.className = `choice-btn ${idx===0?'btn-1':'btn-2'}`;
+                btn.innerText = item.txt;
+                btn.onclick = ()=>changeStory(item.next);
+                btnWrap.appendChild(btn);
+            })
+        }
+
+        // 重置回到第一集
+        function resetStory(){
+            changeStory(1);
+        }
+    </script>
+</body>
+</html>

@@ -479,6 +479,215 @@ body {
   animation: fireflyDrift 7.5s ease-in-out infinite;
 }
 
+.works-portal.is-opening-blue .works-card {
+  transform-origin: 21.5% 58%;
+  animation: worksWorldDrawIn 3s cubic-bezier(0.26, 0.72, 0.16, 1) forwards;
+}
+
+.works-portal.is-opening-blue .works-back,
+.works-portal.is-opening-blue .work-node:not(.is-opening) {
+  pointer-events: none;
+  animation: worksQuietFade 3s ease forwards;
+}
+
+.fruit-world-release {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 21.5% 58%, rgba(221, 253, 255, 0.94) 0 1.2%, rgba(97, 215, 255, 0.48) 5.8%, rgba(31, 133, 255, 0.18) 16%, transparent 33%),
+    radial-gradient(circle at 21.5% 58%, transparent 0 18%, rgba(78, 196, 255, 0.16) 21%, transparent 30%),
+    linear-gradient(90deg, rgba(0, 24, 44, 0.02), rgba(104, 219, 255, 0.08), rgba(0, 14, 32, 0.12));
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform-origin: 21.5% 58%;
+  animation: fruitReleaseBloom 3s cubic-bezier(0.26, 0.72, 0.16, 1) forwards;
+}
+
+.fruit-world-release::before,
+.fruit-world-release::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.fruit-world-release::before {
+  background:
+    linear-gradient(106deg, transparent 0 14%, rgba(160, 235, 255, 0.34) 20%, transparent 30%),
+    linear-gradient(117deg, transparent 0 22%, rgba(77, 199, 255, 0.25) 30%, transparent 44%),
+    radial-gradient(circle at 21.5% 58%, rgba(255, 255, 255, 0.55), transparent 18%);
+  opacity: 0;
+  transform: translate3d(-1.6%, 1.2%, 0) scale(0.94);
+  animation: fruitEnergySweep 3s ease forwards;
+}
+
+.fruit-world-release::after {
+  background: radial-gradient(circle at 21.5% 58%, rgba(235, 255, 255, 0.72), rgba(99, 218, 255, 0.48) 14%, rgba(31, 132, 255, 0.24) 36%, rgba(3, 19, 44, 0.14) 62%, transparent 80%);
+  opacity: 0;
+  transform-origin: 21.5% 58%;
+  animation: fruitScreenWash 3s ease forwards;
+}
+
+.fruit-world-release span {
+  position: absolute;
+  left: 21.5%;
+  top: 58%;
+  width: 24vmin;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(190, 245, 255, 0.48);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(230, 255, 255, 0.4), transparent 18%),
+    conic-gradient(from 20deg, transparent 0 13%, rgba(126, 226, 255, 0.58) 15% 20%, transparent 24% 46%, rgba(202, 251, 255, 0.42) 50% 54%, transparent 58% 100%);
+  box-shadow: 0 0 28px rgba(80, 211, 255, 0.32), inset 0 0 22px rgba(111, 218, 255, 0.2);
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(0deg) scale(0.42);
+  animation: fruitVortexExpand 3s cubic-bezier(0.32, 0.02, 0.16, 1) forwards;
+}
+
+.fruit-world-release span:nth-child(2) {
+  width: 42vmin;
+  animation-delay: 0.08s;
+  animation-duration: 2.9s;
+  opacity: 0.72;
+}
+
+.fruit-world-release span:nth-child(3) {
+  width: 66vmin;
+  animation-delay: 0.16s;
+  opacity: 0.46;
+}
+
+.works-portal.is-opening-gold .works-card {
+  transform-origin: 50% 47%;
+  animation: lifeWorldDrift 3s cubic-bezier(0.28, 0.72, 0.18, 1) forwards;
+}
+
+.works-portal.is-opening-gold .works-back,
+.works-portal.is-opening-gold .work-node:not(.is-opening) {
+  pointer-events: none;
+  animation: lifeSideFade 3s ease forwards;
+}
+
+.life-world-release {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 47%, rgba(185, 255, 157, 0.34), rgba(82, 210, 124, 0.14) 18%, transparent 42%),
+    radial-gradient(circle at 50% 47%, transparent 0 20%, rgba(10, 45, 28, 0.42) 48%, rgba(0, 3, 8, 0.82) 100%);
+  opacity: 0;
+  transform-origin: 50% 47%;
+  animation: lifeReleaseStage 3s ease forwards;
+}
+
+.life-world-release::before,
+.life-world-release::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.life-world-release::before {
+  background:
+    linear-gradient(112deg, transparent 0 24%, rgba(128, 255, 177, 0.14) 32%, transparent 46%),
+    linear-gradient(74deg, transparent 0 36%, rgba(212, 255, 148, 0.12) 45%, transparent 58%),
+    radial-gradient(circle at 50% 47%, rgba(224, 255, 176, 0.44), rgba(67, 227, 137, 0.2) 22%, transparent 54%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform-origin: 50% 47%;
+  animation: lifeFogFlow 3s ease forwards;
+}
+
+.life-world-release::after {
+  background:
+    radial-gradient(circle at 50% 47%, rgba(244, 255, 205, 0.42), rgba(109, 237, 140, 0.38) 18%, rgba(24, 121, 82, 0.18) 48%, transparent 76%),
+    radial-gradient(ellipse at 50% 70%, rgba(64, 255, 156, 0.12), transparent 52%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform-origin: 50% 47%;
+  animation: lifeScreenWake 3s ease forwards;
+}
+
+.life-world-release span {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: 20vmin;
+  aspect-ratio: 1;
+  border: 1px solid rgba(201, 255, 165, 0.42);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(235, 255, 201, 0.34), transparent 19%),
+    conic-gradient(from 20deg, transparent 0 13%, rgba(98, 236, 138, 0.52) 16% 22%, transparent 28% 48%, rgba(224, 255, 158, 0.34) 54% 59%, transparent 64% 100%);
+  box-shadow: 0 0 26px rgba(102, 235, 130, 0.28), inset 0 0 18px rgba(224, 255, 177, 0.18);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform: translate(-50%, -50%) rotate(0deg) scale(0.32);
+  animation: lifeRingSpin 3s cubic-bezier(0.32, 0.02, 0.16, 1) forwards;
+}
+
+.life-world-release span:nth-child(2) {
+  width: 39vmin;
+  animation-delay: 0.06s;
+  animation-duration: 2.92s;
+}
+
+.life-world-release span:nth-child(3) {
+  width: 62vmin;
+  animation-delay: 0.12s;
+  opacity: 0.42;
+}
+
+.life-world-release b {
+  position: absolute;
+  z-index: 2;
+  color: rgba(220, 255, 210, 0.72);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(11px, 1.2vw, 17px);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 16px rgba(100, 238, 132, 0.62);
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0) scale(0.86);
+  animation: lifeTextFragment 3s ease forwards;
+}
+
+.life-world-release b:nth-of-type(1) { left: 42%; top: 41%; animation-delay: 0.22s; }
+.life-world-release b:nth-of-type(2) { left: 59%; top: 46%; animation-delay: 0.3s; }
+.life-world-release b:nth-of-type(3) { left: 45%; top: 56%; animation-delay: 0.38s; }
+.life-world-release b:nth-of-type(4) { left: 56%; top: 60%; animation-delay: 0.46s; }
+
+.life-world-release i {
+  position: absolute;
+  z-index: 2;
+  left: 38%;
+  top: 55%;
+  width: clamp(38px, 5vw, 66px);
+  height: clamp(84px, 10vw, 140px);
+  border: 1px solid rgba(195, 255, 186, 0.24);
+  border-radius: 48% 48% 38% 38% / 38% 38% 56% 56%;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(222, 255, 198, 0.28) 0 12%, transparent 13%),
+    linear-gradient(180deg, rgba(130, 255, 169, 0.15), transparent 72%);
+  box-shadow: 0 0 24px rgba(91, 232, 135, 0.24), inset 0 0 20px rgba(192, 255, 167, 0.12);
+  opacity: 0;
+  filter: blur(0.4px);
+  transform: translate(-50%, -50%) scale(0.82);
+  animation: lifeRoleReveal 3s ease forwards;
+}
+
+.life-world-release i:nth-of-type(2) {
+  left: 63%;
+  top: 54%;
+  width: clamp(34px, 4.4vw, 58px);
+  height: clamp(78px, 9vw, 126px);
+  animation-delay: 0.2s;
+}
+
 .works-tree {
   display: none;
 }
@@ -576,6 +785,55 @@ body {
   animation: groundGlow 5.4s ease-in-out infinite;
 }
 
+.works-back {
+  position: absolute;
+  top: clamp(18px, 3vw, 34px);
+  left: clamp(18px, 3vw, 34px);
+  z-index: 9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  min-height: 42px;
+  border: 1px solid rgba(168, 226, 255, 0.32);
+  border-radius: 50%;
+  background: rgba(4, 18, 28, 0.36);
+  color: rgba(232, 249, 255, 0.92);
+  font-size: 0;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.22),
+    0 0 18px rgba(58, 173, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.works-back::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin-left: 3px;
+  border-bottom: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.works-back:hover,
+.works-back:focus-visible {
+  border-color: rgba(120, 219, 255, 0.74);
+  background: rgba(7, 31, 48, 0.54);
+  box-shadow:
+    0 16px 38px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(72, 190, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  outline: none;
+}
+
+.works-back:active {
+  transform: translateY(1px);
+}
+
 .work-node {
   --orb: #5ecbff;
   --glow: rgba(79, 186, 255, 0.62);
@@ -649,6 +907,7 @@ body {
 
 .work-orb {
   position: relative;
+  display: block;
   width: clamp(42px, 4.9vw, 64px);
   aspect-ratio: 0.88;
   padding: 0;
@@ -759,6 +1018,155 @@ body {
   mix-blend-mode: screen;
   opacity: 0.78;
   animation: fruitSparkle 3.2s ease-in-out infinite;
+}
+
+.fruit-crack,
+.fruit-beam,
+.fruit-vortex {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.fruit-crack {
+  inset: 17%;
+  z-index: 5;
+  border-radius: inherit;
+  background:
+    linear-gradient(58deg, transparent 0 45%, rgba(216, 251, 255, 0.78) 46.4% 47.4%, rgba(80, 215, 255, 0.12) 48%, transparent 50%),
+    linear-gradient(112deg, transparent 0 50%, rgba(200, 247, 255, 0.58) 51% 52%, transparent 54%),
+    linear-gradient(15deg, transparent 0 56%, rgba(128, 225, 255, 0.42) 57% 57.8%, transparent 60%),
+    radial-gradient(ellipse at 50% 24%, rgba(228, 253, 255, 0.56), rgba(95, 216, 255, 0.12) 22%, transparent 34%);
+  filter: drop-shadow(0 0 4px rgba(123, 229, 255, 0.56));
+  clip-path: inset(0 49% 78% 49%);
+  mix-blend-mode: screen;
+}
+
+.fruit-beam {
+  left: 50%;
+  top: 45%;
+  z-index: 3;
+  width: clamp(54px, 13vmin, 170px);
+  height: 150vmax;
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 255, 255, 0.58), rgba(157, 243, 255, 0.34) 18%, rgba(55, 190, 255, 0.14) 42%, transparent 76%),
+    linear-gradient(to bottom, transparent 0 12%, rgba(211, 253, 255, 0.42) 33%, rgba(60, 193, 255, 0.16) 62%, transparent 94%);
+  filter: blur(7px) drop-shadow(0 0 18px rgba(99, 217, 255, 0.48));
+  mix-blend-mode: screen;
+  transform: translate(-50%, -50%) rotate(-4deg) scaleY(0.08);
+  transform-origin: 50% 40%;
+}
+
+.fruit-vortex {
+  left: 50%;
+  top: 53%;
+  z-index: 4;
+  width: clamp(78px, 12vmin, 160px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(185, 246, 255, 0.56);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(233, 255, 255, 0.72), transparent 21%),
+    conic-gradient(from 0deg, transparent 0 16%, rgba(86, 213, 255, 0.72) 19% 25%, transparent 30% 55%, rgba(213, 252, 255, 0.52) 59% 63%, transparent 68% 100%);
+  box-shadow: 0 0 26px rgba(92, 210, 255, 0.52), inset 0 0 18px rgba(178, 245, 255, 0.28);
+  mix-blend-mode: screen;
+  transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+}
+
+.node-blue.is-opening {
+  z-index: 16;
+}
+
+.node-blue.is-opening .work-copy,
+.node-blue.is-opening .hanging-thread {
+  animation: fruitLabelYield 3s ease forwards;
+}
+
+.node-blue.is-opening .work-orb {
+  pointer-events: none;
+  animation: fruitOpenBody 3s cubic-bezier(0.26, 0.72, 0.16, 1) forwards;
+}
+
+.node-blue.is-opening .work-orb::before {
+  animation: fruitCrownOpen 3s cubic-bezier(0.26, 0.72, 0.16, 1) forwards;
+}
+
+.node-blue.is-opening .work-orb::after {
+  animation: fruitParticlesGather 3s cubic-bezier(0.26, 0.72, 0.16, 1) forwards;
+}
+
+.node-blue.is-opening .work-orb i {
+  animation: fruitCoreAwaken 3s cubic-bezier(0.26, 0.72, 0.16, 1) forwards;
+}
+
+.node-blue.is-opening .fruit-crack {
+  animation: fruitCrackSpread 3s ease forwards;
+}
+
+.node-blue.is-opening .fruit-beam {
+  animation: fruitBeamRise 3s cubic-bezier(0.26, 0.72, 0.16, 1) forwards;
+}
+
+.node-blue.is-opening .fruit-vortex {
+  animation: fruitOrbVortex 3s cubic-bezier(0.32, 0.02, 0.16, 1) forwards;
+}
+
+.node-gold.is-opening {
+  z-index: 16;
+}
+
+.node-gold.is-opening .work-copy,
+.node-gold.is-opening .hanging-thread {
+  animation: lifeLabelDissolve 3s ease forwards;
+}
+
+.node-gold.is-opening .work-orb {
+  pointer-events: none;
+  animation: goldFruitOpenBody 3s cubic-bezier(0.28, 0.72, 0.18, 1) forwards;
+}
+
+.node-gold.is-opening .work-orb::before {
+  animation: goldFruitCrownLift 3s cubic-bezier(0.28, 0.72, 0.18, 1) forwards;
+}
+
+.node-gold.is-opening .work-orb::after {
+  animation: goldLifeParticles 3s cubic-bezier(0.28, 0.72, 0.18, 1) forwards;
+}
+
+.node-gold.is-opening .work-orb i {
+  animation: goldFruitCoreFlow 3s cubic-bezier(0.28, 0.72, 0.18, 1) forwards;
+}
+
+.node-gold.is-opening .fruit-crack {
+  inset: 15%;
+  background:
+    linear-gradient(62deg, transparent 0 45%, rgba(236, 255, 166, 0.78) 46.4% 47.6%, rgba(88, 242, 139, 0.14) 48.4%, transparent 50%),
+    linear-gradient(116deg, transparent 0 50%, rgba(162, 255, 165, 0.62) 51% 52%, transparent 54%),
+    linear-gradient(18deg, transparent 0 57%, rgba(210, 255, 119, 0.42) 58% 58.9%, transparent 61%),
+    radial-gradient(ellipse at 50% 24%, rgba(248, 255, 190, 0.54), rgba(91, 238, 122, 0.15) 22%, transparent 36%);
+  filter: drop-shadow(0 0 5px rgba(151, 245, 136, 0.56));
+  animation: goldFruitCrackSpread 3s ease forwards;
+}
+
+.node-gold.is-opening .fruit-beam {
+  width: clamp(76px, 15vmin, 190px);
+  height: 126vmax;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(248, 255, 205, 0.5), rgba(151, 255, 159, 0.32) 18%, rgba(62, 217, 121, 0.12) 46%, transparent 78%),
+    linear-gradient(to bottom, transparent 0 14%, rgba(238, 255, 190, 0.24) 32%, rgba(76, 217, 121, 0.16) 66%, transparent 96%);
+  filter: blur(10px) drop-shadow(0 0 20px rgba(111, 237, 130, 0.4));
+  transform: translate(-50%, -50%) rotate(3deg) scaleY(0.08);
+  animation: goldLifeBeamRise 3s cubic-bezier(0.28, 0.72, 0.18, 1) forwards;
+}
+
+.node-gold.is-opening .fruit-vortex {
+  border-color: rgba(210, 255, 162, 0.52);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(244, 255, 198, 0.6), transparent 22%),
+    conic-gradient(from 0deg, transparent 0 15%, rgba(95, 235, 135, 0.68) 18% 24%, transparent 30% 52%, rgba(232, 255, 155, 0.44) 58% 63%, transparent 70% 100%);
+  box-shadow: 0 0 28px rgba(107, 236, 128, 0.45), inset 0 0 18px rgba(220, 255, 166, 0.24);
+  animation: goldLifeVortex 3s cubic-bezier(0.32, 0.02, 0.16, 1) forwards;
 }
 
 .node-gold {
@@ -1350,6 +1758,564 @@ body {
   }
   50% {
     transform: translateX(-50%) rotate(4deg) translateY(-1px);
+  }
+}
+
+@keyframes worksWorldDrawIn {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: brightness(1) saturate(1);
+  }
+  48% {
+    transform: scale(1.035) translate3d(0.2%, -0.12%, 0);
+    filter: brightness(1.08) saturate(1.08);
+  }
+  100% {
+    transform: scale(1.09) translate3d(0.85%, -0.46%, 0);
+    filter: brightness(1.16) saturate(1.14);
+  }
+}
+
+@keyframes worksQuietFade {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  62% {
+    opacity: 0.44;
+    filter: blur(0.3px);
+  }
+  100% {
+    opacity: 0.18;
+    filter: blur(1.2px);
+  }
+}
+
+@keyframes fruitReleaseBloom {
+  0% {
+    opacity: 0.06;
+    transform: scale(0.94) translate3d(-0.4%, 0.2%, 0);
+    filter: blur(0) brightness(1);
+  }
+  16% {
+    opacity: 0.42;
+    transform: scale(1.02) translate3d(0.1%, -0.1%, 0);
+    filter: blur(0) brightness(1.05);
+  }
+  58% {
+    opacity: 0.9;
+    transform: scale(1.22) translate3d(1.6%, -0.9%, 0);
+    filter: blur(0.8px) brightness(1.12);
+  }
+  100% {
+    opacity: 0.68;
+    transform: scale(1.68) translate3d(5.2%, -2.8%, 0);
+    filter: blur(4px) brightness(1.2);
+  }
+}
+
+@keyframes fruitEnergySweep {
+  0% {
+    opacity: 0.06;
+    transform: translate3d(-1.8%, 1.2%, 0) scale(0.9);
+  }
+  28% {
+    opacity: 0.48;
+    transform: translate3d(-0.2%, 0, 0) scale(1.02);
+  }
+  100% {
+    opacity: 0.28;
+    transform: translate3d(3.2%, -1.6%, 0) scale(1.24);
+  }
+}
+
+@keyframes fruitScreenWash {
+  0% {
+    opacity: 0.03;
+    transform: scale(0.7) translate3d(-1.4%, 0.7%, 0);
+  }
+  28% {
+    opacity: 0.12;
+    transform: scale(0.92) translate3d(-0.2%, 0.1%, 0);
+  }
+  66% {
+    opacity: 0.36;
+    transform: scale(1.24) translate3d(2.4%, -1.2%, 0);
+  }
+  100% {
+    opacity: 0.42;
+    transform: scale(2.18) translate3d(6.4%, -3%, 0);
+  }
+}
+
+@keyframes fruitVortexExpand {
+  0% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.26);
+  }
+  18% {
+    opacity: 0.62;
+  }
+  62% {
+    opacity: 0.86;
+    transform: translate(-50%, -50%) rotate(390deg) scale(1.2);
+  }
+  100% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) rotate(980deg) scale(3.1);
+  }
+}
+
+@keyframes fruitLabelYield {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  44% {
+    opacity: 0.42;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fruitOpenBody {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1) saturate(1.04) drop-shadow(0 0 8px var(--glow));
+  }
+  22% {
+    transform: scale(1.08) rotate(-1.5deg);
+    filter: brightness(1.25) saturate(1.14) drop-shadow(0 0 14px rgba(147, 237, 255, 0.58));
+  }
+  58% {
+    transform: scale(1.18) rotate(1.2deg) translateY(-2px);
+    filter: brightness(1.48) saturate(1.24) drop-shadow(0 0 24px rgba(147, 237, 255, 0.72));
+  }
+  100% {
+    transform: scale(1.36) rotate(0deg);
+    filter: brightness(1.86) saturate(1.32) drop-shadow(0 0 38px rgba(193, 250, 255, 0.82));
+  }
+}
+
+@keyframes fruitCrownOpen {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) rotate(-3deg) scale(1);
+  }
+  40% {
+    opacity: 0.98;
+    transform: translateX(-50%) rotate(-10deg) translateY(-8px) scale(1.08);
+  }
+  100% {
+    opacity: 0.18;
+    transform: translateX(-50%) rotate(-24deg) translateY(-24px) scale(1.24);
+  }
+}
+
+@keyframes fruitParticlesGather {
+  0% {
+    opacity: 0.76;
+    transform: rotate(0deg) scale(1);
+  }
+  32% {
+    opacity: 1;
+    transform: rotate(90deg) scale(1.35);
+  }
+  100% {
+    opacity: 0.06;
+    transform: rotate(680deg) scale(3.05);
+  }
+}
+
+@keyframes fruitCoreAwaken {
+  0% {
+    opacity: 0.82;
+    transform: rotate(0deg) scale(1);
+  }
+  26% {
+    opacity: 1;
+    transform: rotate(120deg) scale(1.18);
+  }
+  100% {
+    opacity: 0.16;
+    transform: rotate(760deg) scale(1.7);
+  }
+}
+
+@keyframes fruitCrackSpread {
+  0% {
+    opacity: 0.05;
+    clip-path: inset(0 50% 82% 50%);
+    filter: drop-shadow(0 0 2px rgba(123, 229, 255, 0));
+  }
+  14% {
+    opacity: 0.62;
+    clip-path: inset(0 45% 70% 44%);
+  }
+  46% {
+    opacity: 0.78;
+    clip-path: inset(0 27% 48% 25%);
+    filter: drop-shadow(0 0 6px rgba(152, 240, 255, 0.62));
+  }
+  100% {
+    opacity: 0.14;
+    clip-path: inset(0 18% 36% 17%);
+    filter: drop-shadow(0 0 10px rgba(206, 255, 255, 0.38)) blur(0.35px);
+  }
+}
+
+@keyframes fruitBeamRise {
+  0% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) rotate(-11deg) scaleX(0.32) scaleY(0.06);
+  }
+  20% {
+    opacity: 0.28;
+    transform: translate(-50%, -52%) rotate(-5deg) scaleX(0.74) scaleY(0.32);
+  }
+  62% {
+    opacity: 0.48;
+    transform: translate(-48%, -55%) rotate(-3deg) scaleX(1.4) scaleY(1.02);
+  }
+  100% {
+    opacity: 0.34;
+    transform: translate(-40%, -61%) rotate(-2deg) scaleX(3.1) scaleY(1.68);
+  }
+}
+
+@keyframes fruitOrbVortex {
+  0% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) scale(0.14) rotate(0deg);
+  }
+  16% {
+    opacity: 0.72;
+  }
+  62% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.18) rotate(460deg);
+  }
+  100% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) scale(3.2) rotate(1120deg);
+  }
+}
+
+@keyframes lifeWorldDrift {
+  0% {
+    filter: brightness(1) saturate(1);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  22% {
+    filter: brightness(0.58) saturate(0.9);
+    transform: translate3d(-0.14%, 0.18%, 0) scale(1.006);
+  }
+  40% {
+    filter: brightness(0.48) saturate(0.96);
+    transform: translate3d(-0.34%, 0.36%, 0) scale(1.014);
+  }
+  68% {
+    filter: brightness(0.88) saturate(1.18);
+    transform: translate3d(-0.1%, 0.08%, 0) scale(1.03);
+  }
+  100% {
+    filter: brightness(1.3) saturate(1.32);
+    transform: translate3d(0.34%, -0.22%, 0) scale(1.048);
+  }
+}
+
+@keyframes lifeSideFade {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  34% {
+    opacity: 0.46;
+    filter: brightness(0.55);
+  }
+  100% {
+    opacity: 0.12;
+    filter: brightness(0.35);
+  }
+}
+
+@keyframes lifeReleaseStage {
+  0% {
+    opacity: 0.08;
+    filter: brightness(0.9);
+    transform: scale(0.98);
+  }
+  18% {
+    opacity: 0.46;
+    filter: brightness(0.82);
+    transform: scale(1);
+  }
+  42% {
+    opacity: 0.72;
+    filter: brightness(0.94);
+  }
+  72% {
+    opacity: 0.92;
+    filter: brightness(1.16);
+    transform: scale(1.018);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1.34);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes lifeFogFlow {
+  0% {
+    opacity: 0.08;
+    transform: translate3d(-1.4%, 0.8%, 0) scale(0.9) rotate(-4deg);
+  }
+  18% {
+    opacity: 0.28;
+    transform: translate3d(-0.8%, 0.42%, 0) scale(0.98) rotate(-1deg);
+  }
+  58% {
+    opacity: 0.68;
+    transform: translate3d(0.4%, -0.2%, 0) scale(1.2) rotate(5deg);
+  }
+  100% {
+    opacity: 0.52;
+    transform: translate3d(1.4%, -0.9%, 0) scale(1.72) rotate(15deg);
+  }
+}
+
+@keyframes lifeScreenWake {
+  0% {
+    opacity: 0.04;
+    transform: scale(0.62) rotate(0deg);
+  }
+  20% {
+    opacity: 0.18;
+  }
+  58% {
+    opacity: 0.62;
+    transform: scale(1.28) rotate(12deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(3.05) rotate(28deg);
+  }
+}
+
+@keyframes lifeRingSpin {
+  0% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.22);
+  }
+  16% {
+    opacity: 0.42;
+  }
+  56% {
+    opacity: 0.84;
+    transform: translate(-50%, -50%) rotate(260deg) scale(1.04);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(720deg) scale(2.32);
+  }
+}
+
+@keyframes lifeTextFragment {
+  0% {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translate3d(-50%, -50%, 0) scale(0.78) rotate(-6deg);
+  }
+  20% {
+    opacity: 0;
+  }
+  44% {
+    opacity: 0.78;
+    filter: blur(0);
+    transform: translate3d(-50%, -50%, 0) scale(1) rotate(0deg);
+  }
+  76% {
+    opacity: 0.58;
+    filter: blur(0.4px);
+    transform: translate3d(-50%, -64%, 0) scale(1.06) rotate(3deg);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translate3d(-50%, -82%, 0) scale(1.2) rotate(8deg);
+  }
+}
+
+@keyframes lifeRoleReveal {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate(-50%, -50%) scale(0.68);
+  }
+  28% {
+    opacity: 0;
+  }
+  58% {
+    opacity: 0.46;
+    filter: blur(1px);
+    transform: translate(-50%, -54%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(7px);
+    transform: translate(-50%, -68%) scale(1.18);
+  }
+}
+
+@keyframes lifeLabelDissolve {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0);
+  }
+  36% {
+    opacity: 0.72;
+    filter: blur(0.4px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes goldFruitOpenBody {
+  0% {
+    opacity: 1;
+    filter: brightness(1) saturate(1);
+    transform: translateX(-50%) scale(1);
+  }
+  22% {
+    filter: brightness(0.86) saturate(0.94);
+    transform: translateX(-50%) scale(1.025);
+  }
+  52% {
+    filter: brightness(1.34) saturate(1.25);
+    transform: translateX(-50%) translateY(-2px) scale(1.1);
+  }
+  100% {
+    opacity: 0.42;
+    filter: brightness(1.64) saturate(1.38) blur(0.8px);
+    transform: translateX(-50%) translateY(-10px) scale(1.24);
+  }
+}
+
+@keyframes goldFruitCrownLift {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) rotate(-3deg) scale(1);
+  }
+  46% {
+    opacity: 1;
+    transform: translateX(-50%) rotate(-8deg) translateY(-6px) scale(1.06);
+  }
+  100% {
+    opacity: 0.22;
+    transform: translateX(-50%) rotate(-18deg) translateY(-22px) scale(1.18);
+  }
+}
+
+@keyframes goldLifeParticles {
+  0% {
+    opacity: 0.72;
+    transform: rotate(0deg) scale(1);
+  }
+  22% {
+    opacity: 0.62;
+    transform: rotate(44deg) scale(1.08);
+  }
+  62% {
+    opacity: 1;
+    transform: rotate(210deg) scale(1.65);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(620deg) scale(3.1);
+  }
+}
+
+@keyframes goldFruitCoreFlow {
+  0% {
+    opacity: 0.82;
+    transform: rotate(0deg) scale(1);
+  }
+  18% {
+    opacity: 0.82;
+    transform: rotate(52deg) scale(1.07);
+  }
+  56% {
+    opacity: 1;
+    transform: rotate(220deg) scale(1.26);
+  }
+  100% {
+    opacity: 0.12;
+    transform: rotate(660deg) scale(1.72);
+  }
+}
+
+@keyframes goldFruitCrackSpread {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 49% 78% 49%);
+  }
+  16% {
+    opacity: 0.18;
+    clip-path: inset(0 47% 72% 47%);
+  }
+  52% {
+    opacity: 0.76;
+    clip-path: inset(0 33% 48% 32%);
+  }
+  100% {
+    opacity: 0.28;
+    clip-path: inset(0 20% 36% 20%);
+    filter: drop-shadow(0 0 8px rgba(180, 255, 139, 0.54)) blur(0.35px);
+  }
+}
+
+@keyframes goldLifeBeamRise {
+  0% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) rotate(3deg) scaleX(0.28) scaleY(0.04);
+  }
+  18% {
+    opacity: 0.18;
+    transform: translate(-50%, -50%) rotate(3deg) scaleX(0.46) scaleY(0.16);
+  }
+  58% {
+    opacity: 0.5;
+    transform: translate(-50%, -54%) rotate(1deg) scaleX(0.92) scaleY(0.62);
+  }
+  100% {
+    opacity: 0.36;
+    transform: translate(-50%, -62%) rotate(-1deg) scaleX(3.05) scaleY(1.58);
+  }
+}
+
+@keyframes goldLifeVortex {
+  0% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) scale(0.14) rotate(0deg);
+  }
+  20% {
+    opacity: 0.36;
+  }
+  62% {
+    opacity: 0.86;
+    transform: translate(-50%, -50%) scale(1.08) rotate(380deg);
+  }
+  100% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) scale(3.12) rotate(980deg);
   }
 }
 

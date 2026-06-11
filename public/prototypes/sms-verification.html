@@ -1,0 +1,1691 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>验证码登录</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080d16;
+        --panel: rgba(13, 20, 33, 0.8);
+        --panel-strong: rgba(10, 16, 27, 0.92);
+        --field: rgba(255, 255, 255, 0.075);
+        --field-line: rgba(142, 171, 205, 0.22);
+        --text: #f7fbff;
+        --muted: #8fa2bb;
+        --dim: #61718a;
+        --primary: #25a7ff;
+        --cyan: #28e4d2;
+        --violet: #7c5cff;
+        --amber: #ffb15c;
+        --error: #ff6b6b;
+        --success: #25d799;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 20% 10%, rgba(37, 167, 255, 0.24), transparent 28%),
+          radial-gradient(circle at 80% 18%, rgba(124, 92, 255, 0.22), transparent 28%),
+          radial-gradient(circle at 70% 88%, rgba(40, 228, 210, 0.16), transparent 32%),
+          linear-gradient(180deg, #121827 0%, var(--bg) 70%);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: linear-gradient(180deg, #000, transparent 84%);
+      }
+
+      a {
+        color: #78c7ff;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        touch-action: manipulation;
+      }
+
+      .phone-shell {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+
+      .screen {
+        position: relative;
+        width: min(394px, 100vw);
+        min-height: min(866px, 100dvh);
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(20, 29, 46, 0.98), rgba(7, 12, 21, 0.98)),
+          var(--bg);
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.48),
+          0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+
+      .view {
+        display: none;
+        min-height: inherit;
+      }
+
+      .view.active {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .status-bar {
+        position: relative;
+        z-index: 4;
+        height: 57px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 19px 0 23px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        background: rgba(8, 13, 22, 0.74);
+        backdrop-filter: blur(18px);
+      }
+
+      .status-icons {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .signal {
+        display: inline-block;
+        width: 18px;
+        height: 12px;
+        background:
+          linear-gradient(#fff, #fff) 1px 7px / 3px 5px no-repeat,
+          linear-gradient(#fff, #fff) 6px 5px / 3px 7px no-repeat,
+          linear-gradient(#fff, #fff) 11px 2px / 3px 10px no-repeat;
+      }
+
+      .wifi {
+        width: 15px;
+        height: 12px;
+        border: 3px solid #fff;
+        border-left-color: transparent;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        transform: rotate(-45deg);
+      }
+
+      .battery {
+        position: relative;
+        width: 21px;
+        height: 10px;
+        border: 1.5px solid #fff;
+        border-radius: 2px;
+      }
+
+      .battery::before {
+        content: "";
+        position: absolute;
+        right: -4px;
+        top: 2px;
+        width: 2px;
+        height: 4px;
+        border-radius: 0 1px 1px 0;
+        background: #fff;
+      }
+
+      .battery::after {
+        content: "";
+        position: absolute;
+        inset: 1.5px 4px 1.5px 1.5px;
+        background: #fff;
+      }
+
+      .hero {
+        position: relative;
+        min-height: 292px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.95) 0 1px, transparent 1.8px),
+          radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.82) 0 1px, transparent 1.8px),
+          radial-gradient(circle at 67% 38%, rgba(199, 232, 255, 0.8) 0 1.2px, transparent 2px),
+          radial-gradient(circle at 34% 52%, rgba(255, 238, 198, 0.72) 0 1px, transparent 1.8px),
+          radial-gradient(circle at 88% 62%, rgba(255, 255, 255, 0.7) 0 1px, transparent 1.8px),
+          radial-gradient(circle at 74% 36%, rgba(124, 92, 255, 0.32), transparent 24%),
+          radial-gradient(circle at 35% 32%, rgba(40, 228, 210, 0.18), transparent 26%),
+          linear-gradient(180deg, #0b1024 0%, #111a35 48%, #070d19 100%);
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 12% 38%, rgba(255, 255, 255, 0.46) 0 0.9px, transparent 1.6px),
+          radial-gradient(circle at 26% 17%, rgba(255, 255, 255, 0.34) 0 0.8px, transparent 1.5px),
+          radial-gradient(circle at 42% 76%, rgba(255, 255, 255, 0.42) 0 0.9px, transparent 1.6px),
+          radial-gradient(circle at 58% 24%, rgba(255, 255, 255, 0.52) 0 0.9px, transparent 1.6px),
+          radial-gradient(circle at 73% 70%, rgba(255, 255, 255, 0.34) 0 0.8px, transparent 1.5px),
+          radial-gradient(circle at 91% 36%, rgba(255, 255, 255, 0.44) 0 0.9px, transparent 1.6px),
+          linear-gradient(126deg, transparent 0 63%, rgba(255, 255, 255, 0.28) 63.4%, transparent 64.2% 100%);
+        background-size:
+          118px 118px,
+          142px 142px,
+          156px 156px,
+          132px 132px,
+          168px 168px,
+          126px 126px,
+          auto;
+        opacity: 0.9;
+        mask-image: linear-gradient(180deg, #000 0%, #000 82%, transparent 100%);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        left: -12%;
+        right: -12%;
+        bottom: -64px;
+        height: 130px;
+        border-radius: 50%;
+        background:
+          radial-gradient(ellipse at center, rgba(40, 228, 210, 0.18), transparent 42%),
+          rgba(8, 13, 22, 0.94);
+        filter: blur(0.5px);
+      }
+
+      .orb {
+        position: absolute;
+        right: 28px;
+        bottom: 58px;
+        z-index: 1;
+        width: 92px;
+        height: 92px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03)),
+          rgba(9, 16, 29, 0.38);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.25),
+          0 22px 50px rgba(0, 0, 0, 0.24);
+        backdrop-filter: blur(14px);
+      }
+
+      .orb::before,
+      .orb::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+      }
+
+      .orb::before {
+        inset: 18px;
+        border: 3px solid rgba(40, 228, 210, 0.86);
+        box-shadow: 0 0 30px rgba(40, 228, 210, 0.4);
+      }
+
+      .orb::after {
+        left: 50%;
+        top: 50%;
+        width: 26px;
+        height: 26px;
+        background: linear-gradient(135deg, #fff, var(--cyan));
+        transform: translate(-50%, -50%);
+      }
+
+      .hero-copy {
+        position: absolute;
+        left: 32px;
+        right: 132px;
+        bottom: 62px;
+        z-index: 2;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 11px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #c8fff7;
+        font-size: 11px;
+        font-weight: 900;
+        backdrop-filter: blur(12px);
+      }
+
+      .hero-copy h1 {
+        margin: 13px 0 8px;
+        color: #fff;
+        font-size: 32px;
+        line-height: 1.08;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-shadow: 0 14px 30px rgba(0, 0, 0, 0.32);
+      }
+
+      .hero-copy p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .auth-panel {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin-top: -34px;
+        padding: 28px 28px 44px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 30px 30px 0 0;
+        background:
+          linear-gradient(180deg, rgba(17, 25, 40, 0.82), rgba(7, 12, 21, 0.96)),
+          var(--panel);
+        box-shadow:
+          0 -22px 54px rgba(0, 0, 0, 0.34),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(22px);
+      }
+
+      .auth-panel::before {
+        content: "";
+        position: absolute;
+        left: 28px;
+        right: 28px;
+        top: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--cyan), var(--violet), transparent);
+      }
+
+      .login-form {
+        padding: 0;
+      }
+
+      .field-block {
+        margin-bottom: 15px;
+      }
+
+      .field-block label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 9px;
+        color: #f3f8ff;
+        font-size: 16px;
+        line-height: 1.25;
+        font-weight: 850;
+      }
+
+      .field-block label::before {
+        content: "";
+        width: 3px;
+        height: 15px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, var(--cyan), var(--amber));
+        box-shadow: 0 0 16px rgba(40, 228, 210, 0.48);
+      }
+
+      .input-wrap,
+      .code-row {
+        min-height: 54px;
+        border: 1px solid var(--field-line);
+        border-radius: 16px;
+        background: var(--field);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.09),
+          0 18px 38px rgba(0, 0, 0, 0.18);
+        backdrop-filter: blur(18px);
+        transition:
+          border-color 0.18s ease,
+          box-shadow 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .input-wrap {
+        display: flex;
+        align-items: center;
+      }
+
+      .phone-wrap {
+        padding-left: 15px;
+      }
+
+      .country-code {
+        margin-right: 10px;
+        color: #fff;
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 900;
+      }
+
+      .input-wrap input,
+      .code-row input {
+        min-width: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        outline: 0;
+        color: #fff;
+        background: transparent;
+        font-size: 17px;
+        font-weight: 760;
+      }
+
+      .input-wrap input::placeholder,
+      .code-row input::placeholder {
+        color: rgba(198, 212, 232, 0.56);
+        font-weight: 650;
+      }
+
+      .input-wrap:focus-within,
+      .code-row:focus-within {
+        border-color: rgba(40, 228, 210, 0.74);
+        background: rgba(255, 255, 255, 0.11);
+        box-shadow:
+          0 0 0 4px rgba(40, 228, 210, 0.12),
+          0 18px 42px rgba(37, 167, 255, 0.15);
+      }
+
+      .field-error {
+        min-height: 16px;
+        margin: 6px 0 0 2px;
+        color: var(--error);
+        font-size: 11px;
+        line-height: 1.35;
+        font-weight: 760;
+      }
+
+      .code-block {
+        margin-top: 0;
+      }
+
+      .code-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 112px;
+        align-items: stretch;
+      }
+
+      .code-row input {
+        padding: 0 13px;
+      }
+
+      .ghost-button {
+        min-width: 100px;
+        min-height: 42px;
+        align-self: center;
+        margin-right: 6px;
+        border: 1px solid rgba(120, 199, 255, 0.22);
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #9bd7ff;
+        font-size: 13px;
+        font-weight: 880;
+        cursor: pointer;
+        backdrop-filter: blur(14px);
+        transition:
+          transform 0.16s ease,
+          border-color 0.16s ease,
+          background 0.16s ease,
+          opacity 0.16s ease;
+      }
+
+      .ghost-button:disabled {
+        border-color: rgba(148, 163, 184, 0.16);
+        color: rgba(174, 188, 208, 0.55);
+        background: rgba(255, 255, 255, 0.045);
+        cursor: not-allowed;
+      }
+
+      .countdown {
+        min-height: 15px;
+        margin: 5px 2px 0;
+        color: #84d8ff;
+        text-align: right;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        font-weight: 780;
+      }
+
+      .register-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 18px;
+        color: rgba(211, 224, 242, 0.7);
+        font-size: 14px;
+        font-weight: 760;
+      }
+
+      .register-line a,
+      .agreement-row a {
+        color: #7bd7ff;
+        font-weight: 900;
+      }
+
+      .login-button {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        min-height: 54px;
+        border: 0;
+        border-radius: 16px;
+        background:
+          linear-gradient(135deg, var(--primary), var(--cyan) 64%, #b3fff7);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 920;
+        cursor: pointer;
+        box-shadow:
+          0 20px 44px rgba(37, 167, 255, 0.28),
+          inset 0 1px 0 rgba(255, 255, 255, 0.36);
+        transition:
+          transform 0.16s ease,
+          box-shadow 0.16s ease,
+          opacity 0.16s ease;
+      }
+
+      .login-button:not(:disabled):hover,
+      .ghost-button:not(:disabled):hover {
+        transform: translateY(-1px);
+      }
+
+      .login-button:not(:disabled):active,
+      .ghost-button:not(:disabled):active {
+        transform: translateY(0) scale(0.99);
+      }
+
+      .login-button:disabled {
+        color: rgba(191, 204, 223, 0.55);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+
+      .agreement-row {
+        display: flex;
+        align-items: flex-start;
+        margin-top: auto;
+        padding-top: 18px;
+        color: rgba(211, 224, 242, 0.72);
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .agreement-row p {
+        margin: 0;
+      }
+
+      .check-control {
+        position: relative;
+        display: inline-grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        margin: -12px 2px 0 -12px;
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+
+      .check-control input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .check-control span {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        border: 1.5px solid rgba(120, 199, 255, 0.8);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow: 0 0 22px rgba(37, 167, 255, 0.2);
+      }
+
+      .check-control span::after {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 3px;
+        width: 6px;
+        height: 10px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        opacity: 0;
+        transform: rotate(45deg);
+      }
+
+      .check-control input:focus-visible + span {
+        outline: 3px solid rgba(40, 228, 210, 0.22);
+        outline-offset: 3px;
+      }
+
+      .check-control input:checked + span {
+        border-color: var(--cyan);
+        background: linear-gradient(135deg, var(--primary), var(--cyan));
+      }
+
+      .check-control input:checked + span::after {
+        opacity: 1;
+      }
+
+      .home-indicator {
+        position: absolute;
+        left: 50%;
+        bottom: 12px;
+        z-index: 5;
+        width: 119px;
+        height: 4px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.86);
+        transform: translateX(-50%);
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 9vh;
+        z-index: 30;
+        max-width: min(330px, calc(100vw - 32px));
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        background: rgba(11, 18, 32, 0.94);
+        color: #fff;
+        font-size: 14px;
+        line-height: 1.45;
+        opacity: 0;
+        transform: translate(-50%, 12px);
+        pointer-events: none;
+        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.3);
+        transition:
+          opacity 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .loading-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: none;
+        place-items: center;
+        background: rgba(3, 8, 15, 0.58);
+        backdrop-filter: blur(8px);
+      }
+
+      .loading-mask.show {
+        display: grid;
+      }
+
+      .loading-card {
+        display: grid;
+        justify-items: center;
+        gap: 12px;
+        min-width: 132px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 18px;
+        background: rgba(12, 19, 31, 0.92);
+        color: #fff;
+        box-shadow: 0 24px 54px rgba(0, 0, 0, 0.42);
+      }
+
+      .captcha-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 45;
+        display: none;
+        place-items: center;
+        padding: 24px;
+        background: rgba(3, 8, 15, 0.62);
+        backdrop-filter: blur(10px);
+      }
+
+      .captcha-mask.show {
+        display: grid;
+      }
+
+      .captcha-dialog {
+        position: relative;
+        width: min(342px, calc(100vw - 40px));
+        padding: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 22px;
+        background:
+          radial-gradient(circle at 20% 0%, rgba(37, 167, 255, 0.2), transparent 34%),
+          radial-gradient(circle at 92% 22%, rgba(40, 228, 210, 0.16), transparent 32%),
+          rgba(10, 16, 27, 0.94);
+        color: #fff;
+        box-shadow:
+          0 28px 80px rgba(0, 0, 0, 0.48),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+      }
+
+      .captcha-dialog::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 18% 30%, rgba(255, 255, 255, 0.7) 0 1px, transparent 1.7px),
+          radial-gradient(circle at 72% 18%, rgba(255, 255, 255, 0.5) 0 1px, transparent 1.7px),
+          radial-gradient(circle at 86% 66%, rgba(255, 255, 255, 0.42) 0 1px, transparent 1.7px);
+        opacity: 0.46;
+      }
+
+      .captcha-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.07);
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 22px;
+        cursor: pointer;
+      }
+
+      .captcha-title {
+        position: relative;
+        z-index: 1;
+        margin: 0 42px 7px 0;
+        font-size: 20px;
+        line-height: 1.25;
+        font-weight: 900;
+      }
+
+      .captcha-subtitle {
+        position: relative;
+        z-index: 1;
+        margin: 0 42px 16px 0;
+        color: rgba(219, 230, 246, 0.68);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .puzzle-scene {
+        position: relative;
+        z-index: 1;
+        height: 132px;
+        border: 1px solid rgba(120, 199, 255, 0.16);
+        border-radius: 18px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.86) 0 1px, transparent 2px),
+          radial-gradient(circle at 72% 22%, rgba(255, 255, 255, 0.64) 0 1px, transparent 2px),
+          radial-gradient(circle at 86% 70%, rgba(255, 255, 255, 0.46) 0 1px, transparent 2px),
+          radial-gradient(circle at 52% 50%, rgba(124, 92, 255, 0.28), transparent 38%),
+          linear-gradient(135deg, #101b32, #07101f);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+      }
+
+      .puzzle-scene::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(125deg, transparent 0 64%, rgba(255, 255, 255, 0.22) 64.5%, transparent 65.4% 100%),
+          linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: auto, 28px 28px, 28px 28px;
+      }
+
+      .puzzle-target,
+      .puzzle-piece {
+        position: absolute;
+        top: 46px;
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+      }
+
+      .puzzle-target {
+        right: 36px;
+        border: 1px dashed rgba(40, 228, 210, 0.74);
+        background: rgba(40, 228, 210, 0.08);
+        box-shadow: 0 0 24px rgba(40, 228, 210, 0.2);
+      }
+
+      .puzzle-piece {
+        left: 24px;
+        background:
+          radial-gradient(circle at 68% 34%, rgba(255, 255, 255, 0.9) 0 6px, transparent 7px),
+          linear-gradient(135deg, var(--primary), var(--cyan));
+        box-shadow: 0 14px 28px rgba(37, 167, 255, 0.28);
+        transition:
+          left 0.16s ease,
+          opacity 0.16s ease;
+      }
+
+      .captcha-status {
+        position: relative;
+        z-index: 1;
+        min-height: 20px;
+        margin: 13px 0 12px;
+        color: rgba(219, 230, 246, 0.74);
+        text-align: center;
+        font-size: 13px;
+        font-weight: 760;
+      }
+
+      .captcha-status.success {
+        color: #89ffe8;
+      }
+
+      .captcha-status.error {
+        color: var(--error);
+      }
+
+      .slider-track {
+        position: relative;
+        z-index: 1;
+        height: 52px;
+        border: 1px solid rgba(120, 199, 255, 0.16);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.07);
+        overflow: hidden;
+        user-select: none;
+        touch-action: none;
+      }
+
+      .slider-track > span {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: rgba(219, 230, 246, 0.54);
+        font-size: 14px;
+        font-weight: 850;
+        pointer-events: none;
+      }
+
+      .slider-progress {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 52px;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(37, 167, 255, 0.34), rgba(40, 228, 210, 0.42));
+      }
+
+      .slider-handle {
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--cyan));
+        box-shadow: 0 10px 24px rgba(37, 167, 255, 0.28);
+        cursor: grab;
+        transition:
+          left 0.16s ease,
+          transform 0.16s ease,
+          opacity 0.16s ease;
+      }
+
+      .slider-handle::before {
+        content: "›";
+        color: #fff;
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 900;
+      }
+
+      .slider-handle:active {
+        cursor: grabbing;
+        transform: scale(0.98);
+      }
+
+      .captcha-retry {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        min-height: 44px;
+        margin-top: 12px;
+        border: 1px solid rgba(120, 199, 255, 0.22);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.07);
+        color: #8adaff;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      .captcha-dialog.verified .slider-track {
+        border-color: rgba(40, 228, 210, 0.4);
+      }
+
+      .captcha-dialog.verified .slider-track > span {
+        color: #9effee;
+      }
+
+      .captcha-dialog.timeout .slider-track {
+        border-color: rgba(255, 107, 107, 0.34);
+      }
+
+      .spinner {
+        width: 34px;
+        height: 34px;
+        border: 3px solid rgba(255, 255, 255, 0.25);
+        border-top-color: var(--cyan);
+        border-radius: 50%;
+        animation: spin 0.78s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .page-view {
+        min-height: inherit;
+        background:
+          radial-gradient(circle at 20% 0%, rgba(37, 167, 255, 0.18), transparent 30%),
+          linear-gradient(180deg, #111827, #080d16);
+      }
+
+      .page-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 54px;
+        padding: 0 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(8, 13, 22, 0.72);
+        backdrop-filter: blur(16px);
+      }
+
+      .page-header a {
+        color: #fff;
+        font-size: 25px;
+        line-height: 1;
+      }
+
+      .page-header h1 {
+        margin: 0;
+        color: #fff;
+        font-size: 18px;
+      }
+
+      .agreement-content {
+        flex: 1;
+        padding: 22px 22px 72px;
+        overflow: auto;
+      }
+
+      .agreement-content h2 {
+        margin: 22px 0 8px;
+        color: #fff;
+        font-size: 18px;
+      }
+
+      .agreement-content p {
+        margin: 0 0 12px;
+        color: rgba(219, 230, 246, 0.76);
+        font-size: 14px;
+        line-height: 1.85;
+      }
+
+      .success-body {
+        flex: 1;
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        padding: 0 30px 82px;
+        text-align: center;
+      }
+
+      .success-mark {
+        display: grid;
+        place-items: center;
+        width: 78px;
+        height: 78px;
+        margin-bottom: 18px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, var(--success), var(--cyan));
+        color: #fff;
+        font-size: 42px;
+        box-shadow: 0 18px 38px rgba(37, 215, 153, 0.28);
+      }
+
+      .success-body h1 {
+        margin: 0 0 10px;
+        color: #fff;
+        font-size: 26px;
+      }
+
+      .success-body p {
+        margin: 0 0 28px;
+        color: rgba(219, 230, 246, 0.72);
+        line-height: 1.7;
+      }
+
+      .primary-link {
+        display: inline-grid;
+        place-items: center;
+        width: 178px;
+        min-height: 46px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--primary), var(--cyan));
+        color: #fff;
+        font-weight: 880;
+      }
+
+      @media (max-height: 780px) {
+        .hero {
+          min-height: 246px;
+        }
+
+        .hero-copy {
+          bottom: 44px;
+        }
+
+        .hero-copy h1 {
+          font-size: 29px;
+        }
+
+        .orb {
+          bottom: 46px;
+          width: 78px;
+          height: 78px;
+        }
+
+        .auth-panel {
+          margin-top: -30px;
+          padding-top: 23px;
+          padding-bottom: 36px;
+        }
+
+        .field-block {
+          margin-bottom: 10px;
+        }
+
+        .input-wrap,
+        .code-row {
+          min-height: 50px;
+        }
+
+        .login-button {
+          min-height: 52px;
+        }
+
+        .agreement-row {
+          padding-top: 13px;
+        }
+      }
+
+      @media (max-width: 430px) {
+        .phone-shell {
+          padding: 0;
+          place-items: stretch;
+        }
+
+        .screen {
+          width: 100vw;
+          min-height: 100dvh;
+          box-shadow: none;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .hero-copy {
+          left: 24px;
+          right: 112px;
+        }
+
+        .hero-copy h1 {
+          font-size: 25px;
+        }
+
+        .orb {
+          right: 18px;
+        }
+
+        .auth-panel {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        .field-block label {
+          font-size: 15px;
+        }
+
+        .code-row {
+          grid-template-columns: minmax(0, 1fr) 106px;
+        }
+
+        .ghost-button {
+          min-width: 94px;
+          font-size: 12px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="验证码登录单文件原型">
+      <section class="screen">
+        <section class="view login-view active" id="loginView">
+          <div class="status-bar" aria-hidden="true">
+            <span>12:00</span>
+            <div class="status-icons">
+              <span class="signal"></span>
+              <span class="wifi"></span>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <div class="hero" aria-hidden="true">
+            <div class="orb"></div>
+            <div class="hero-copy">
+              <div class="hero-badge">NOVA PASS</div>
+              <h1>验证码登录</h1>
+              <p>安全连接已就绪</p>
+            </div>
+          </div>
+
+          <div class="auth-panel">
+            <form class="login-form" novalidate>
+              <div class="field-block">
+                <label for="phone">手机号码</label>
+                <div class="input-wrap phone-wrap">
+                  <span class="country-code">+86</span>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    inputmode="numeric"
+                    autocomplete="tel"
+                    maxlength="11"
+                    placeholder="请输入手机号"
+                    aria-describedby="phoneError"
+                  />
+                </div>
+                <p class="field-error" id="phoneError" role="alert"></p>
+              </div>
+
+              <div class="field-block code-block">
+                <label for="code">验证码</label>
+                <div class="code-row">
+                  <input
+                    id="code"
+                    name="code"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    maxlength="6"
+                    placeholder="请输入6位验证码"
+                    aria-describedby="codeError"
+                  />
+                  <button class="ghost-button" id="sendCode" type="button" disabled>
+                    获取验证码
+                  </button>
+                </div>
+                <p class="countdown" id="countdown" aria-live="polite"></p>
+                <p class="field-error" id="codeError" role="alert"></p>
+              </div>
+
+              <div class="register-line">
+                <span>还没有账号?</span>
+                <a href="#login">去注册</a>
+              </div>
+
+              <button class="login-button" id="loginButton" type="submit" disabled>
+                立即登录
+              </button>
+            </form>
+
+            <div class="agreement-row">
+              <label class="check-control">
+                <input id="agree" type="checkbox" />
+                <span aria-hidden="true"></span>
+              </label>
+              <p>
+                已阅读同意
+                <a href="#service">《服务协议》</a>
+                <a href="#privacy">《隐私协议》</a>
+              </p>
+            </div>
+          </div>
+
+          <div class="home-indicator" aria-hidden="true"></div>
+        </section>
+
+        <section class="view page-view" id="serviceView">
+          <div class="status-bar" aria-hidden="true">
+            <span>12:00</span>
+            <div class="status-icons">
+              <span class="signal"></span>
+              <span class="wifi"></span>
+              <span class="battery"></span>
+            </div>
+          </div>
+          <header class="page-header">
+            <a href="#login" aria-label="返回">‹</a>
+            <h1>服务协议</h1>
+          </header>
+          <article class="agreement-content">
+            <p>欢迎使用本示例产品。本页面为单文件原型中的占位协议文本，仅用于展示跳转与阅读体验。</p>
+            <h2>一、服务说明</h2>
+            <p>我们会按照页面展示的功能为用户提供账号登录、身份校验及基础信息展示服务。具体服务内容可能根据业务需要调整。</p>
+            <h2>二、账号使用</h2>
+            <p>用户应保证提交的手机号真实、有效，并妥善保管验证码及登录状态。因用户主动泄露信息导致的风险由用户自行承担。</p>
+            <h2>三、行为规范</h2>
+            <p>用户不得通过自动化脚本、高频请求或其他异常方式干扰服务稳定性，也不得利用服务从事违法违规活动。</p>
+            <h2>四、免责声明</h2>
+            <p>因网络故障、系统维护、第三方服务异常等原因造成服务短暂不可用的，我们将在合理范围内尽快处理。</p>
+          </article>
+          <div class="home-indicator" aria-hidden="true"></div>
+        </section>
+
+        <section class="view page-view" id="privacyView">
+          <div class="status-bar" aria-hidden="true">
+            <span>12:00</span>
+            <div class="status-icons">
+              <span class="signal"></span>
+              <span class="wifi"></span>
+              <span class="battery"></span>
+            </div>
+          </div>
+          <header class="page-header">
+            <a href="#login" aria-label="返回">‹</a>
+            <h1>隐私协议</h1>
+          </header>
+          <article class="agreement-content">
+            <p>本隐私协议为原型占位内容，用于说明页面结构与跳转效果，不代表真实产品的法律文本。</p>
+            <h2>一、信息收集</h2>
+            <p>在验证码登录过程中，我们可能收集用户主动输入的手机号、验证码校验结果及必要的设备交互状态。</p>
+            <h2>二、使用目的</h2>
+            <p>相关信息将用于完成身份验证、保障账号安全、防止异常请求以及优化登录体验。</p>
+            <h2>三、信息保护</h2>
+            <p>我们会采用合理的安全措施保护用户信息，避免未经授权的访问、披露、篡改或丢失。</p>
+            <h2>四、用户权利</h2>
+            <p>用户可根据适用规则查询、更正或删除个人信息，也可以撤回授权或注销账号。</p>
+          </article>
+          <div class="home-indicator" aria-hidden="true"></div>
+        </section>
+
+        <section class="view page-view" id="successView">
+          <div class="status-bar" aria-hidden="true">
+            <span>12:00</span>
+            <div class="status-icons">
+              <span class="signal"></span>
+              <span class="wifi"></span>
+              <span class="battery"></span>
+            </div>
+          </div>
+          <div class="success-body">
+            <div class="success-mark" aria-hidden="true">✓</div>
+            <h1>登录成功</h1>
+            <a class="primary-link" href="#login">返回登录页</a>
+          </div>
+          <div class="home-indicator" aria-hidden="true"></div>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="loading-mask" id="loadingMask" aria-hidden="true">
+      <div class="loading-card">
+        <span class="spinner"></span>
+        <strong>登录中</strong>
+      </div>
+    </div>
+
+    <div class="captcha-mask" id="captchaMask" aria-hidden="true">
+      <section class="captcha-dialog" id="captchaDialog" role="dialog" aria-modal="true" aria-labelledby="captchaTitle">
+        <button class="captcha-close" id="captchaClose" type="button" aria-label="关闭验证">×</button>
+        <h2 class="captcha-title" id="captchaTitle">安全验证</h2>
+        <p class="captcha-subtitle">按住滑块向右移动，2秒内完成拼图验证。</p>
+        <div class="puzzle-scene" id="puzzleScene" aria-hidden="true">
+          <span class="puzzle-target" id="puzzleTarget"></span>
+          <span class="puzzle-piece" id="puzzlePiece"></span>
+        </div>
+        <p class="captcha-status" id="captchaStatus" aria-live="polite">按住滑块，拖到高亮区域</p>
+        <div class="slider-track" id="sliderTrack">
+          <div class="slider-progress" id="sliderProgress"></div>
+          <button class="slider-handle" id="sliderHandle" type="button" aria-label="按住向右滑动验证"></button>
+          <span id="sliderText">按住向右滑动</span>
+        </div>
+        <button class="captcha-retry" id="captchaRetry" type="button" hidden>重新验证</button>
+      </section>
+    </div>
+
+    <script>
+      const views = {
+        login: document.querySelector("#loginView"),
+        service: document.querySelector("#serviceView"),
+        privacy: document.querySelector("#privacyView"),
+        success: document.querySelector("#successView"),
+      };
+      const phoneInput = document.querySelector("#phone");
+      const codeInput = document.querySelector("#code");
+      const sendCodeButton = document.querySelector("#sendCode");
+      const loginButton = document.querySelector("#loginButton");
+      const agreeInput = document.querySelector("#agree");
+      const phoneError = document.querySelector("#phoneError");
+      const codeError = document.querySelector("#codeError");
+      const countdownText = document.querySelector("#countdown");
+      const toast = document.querySelector("#toast");
+      const loadingMask = document.querySelector("#loadingMask");
+      const captchaMask = document.querySelector("#captchaMask");
+      const captchaDialog = document.querySelector("#captchaDialog");
+      const captchaClose = document.querySelector("#captchaClose");
+      const captchaRetry = document.querySelector("#captchaRetry");
+      const captchaStatus = document.querySelector("#captchaStatus");
+      const sliderTrack = document.querySelector("#sliderTrack");
+      const sliderHandle = document.querySelector("#sliderHandle");
+      const sliderProgress = document.querySelector("#sliderProgress");
+      const sliderText = document.querySelector("#sliderText");
+      const puzzleScene = document.querySelector("#puzzleScene");
+      const puzzlePiece = document.querySelector("#puzzlePiece");
+      const puzzleTarget = document.querySelector("#puzzleTarget");
+
+      const phonePattern = /^1[3-9]\d{9}$/;
+      let countdown = 0;
+      let countdownTimer = null;
+      let toastTimer = null;
+      let recentSendClicks = [];
+      let loggingIn = false;
+      let captchaDragging = false;
+      let captchaVerified = false;
+      let captchaStartX = 0;
+      let captchaStartTime = 0;
+      let captchaMaxMove = 0;
+      let captchaCurrentMove = 0;
+      let captchaTimeoutTimer = null;
+      let captchaSuccessTimer = null;
+
+      function route() {
+        const key = location.hash.replace("#", "") || "login";
+        const activeKey = views[key] ? key : "login";
+
+        Object.values(views).forEach((view) => view.classList.remove("active"));
+        views[activeKey].classList.add("active");
+      }
+
+      function onlyDigits(value, maxLength) {
+        return value.replace(/\D/g, "").slice(0, maxLength);
+      }
+
+      function isPhoneValid() {
+        return phonePattern.test(phoneInput.value);
+      }
+
+      function isCodeValid() {
+        return /^\d{6}$/.test(codeInput.value);
+      }
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("show");
+        toastTimer = window.setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2200);
+      }
+
+      function updatePhoneError(force = false) {
+        if (!phoneInput.value) {
+          phoneError.textContent = "";
+          return;
+        }
+
+        if (!isPhoneValid() && (force || phoneInput.value.length >= 11)) {
+          phoneError.textContent = "手机号格式错误 请重试";
+          return;
+        }
+
+        phoneError.textContent = "";
+      }
+
+      function updateCodeError(force = false) {
+        if (!codeInput.value) {
+          codeError.textContent = force ? "请输入6位验证码" : "";
+          return;
+        }
+
+        codeError.textContent = force && !isCodeValid() ? "验证码需为6位数字" : "";
+      }
+
+      function updateButtons() {
+        sendCodeButton.disabled = !isPhoneValid() || countdown > 0;
+        loginButton.disabled = !isPhoneValid() || !isCodeValid() || loggingIn;
+      }
+
+      function startCountdown() {
+        countdown = 60;
+        countdownText.textContent = `${countdown}秒后可重新获取`;
+        updateButtons();
+
+        window.clearInterval(countdownTimer);
+        countdownTimer = window.setInterval(() => {
+          countdown -= 1;
+          countdownText.textContent = countdown > 0 ? `${countdown}秒后可重新获取` : "";
+
+          if (countdown <= 0) {
+            window.clearInterval(countdownTimer);
+            countdownTimer = null;
+          }
+
+          updateButtons();
+        }, 1000);
+      }
+
+      function sendCodeAfterCaptcha() {
+        showToast("验证码已发送");
+        startCountdown();
+      }
+
+      function setCaptchaPosition(move) {
+        captchaCurrentMove = Math.max(0, Math.min(move, captchaMaxMove));
+        sliderHandle.style.left = `${captchaCurrentMove + 4}px`;
+        sliderProgress.style.width = `${captchaCurrentMove + 52}px`;
+
+        const sceneRect = puzzleScene.getBoundingClientRect();
+        const targetRect = puzzleTarget.getBoundingClientRect();
+        const targetLeft = targetRect.left - sceneRect.left;
+        const startLeft = 24;
+        const pieceMove = captchaMaxMove
+          ? (captchaCurrentMove / captchaMaxMove) * (targetLeft - startLeft)
+          : 0;
+        puzzlePiece.style.left = `${startLeft + pieceMove}px`;
+      }
+
+      function resetCaptcha() {
+        window.clearTimeout(captchaTimeoutTimer);
+        window.clearTimeout(captchaSuccessTimer);
+        captchaDragging = false;
+        captchaVerified = false;
+        captchaStartX = 0;
+        captchaStartTime = 0;
+        captchaCurrentMove = 0;
+        captchaDialog.classList.remove("verified", "timeout");
+        captchaStatus.className = "captcha-status";
+        captchaStatus.textContent = "按住滑块，拖到高亮区域";
+        sliderText.textContent = "按住向右滑动";
+        captchaRetry.hidden = true;
+        sliderHandle.disabled = false;
+        requestAnimationFrame(() => {
+          const trackRect = sliderTrack.getBoundingClientRect();
+          const handleRect = sliderHandle.getBoundingClientRect();
+          captchaMaxMove = Math.max(0, trackRect.width - handleRect.width - 8);
+          setCaptchaPosition(0);
+        });
+      }
+
+      function openCaptcha() {
+        captchaMask.classList.add("show");
+        captchaMask.setAttribute("aria-hidden", "false");
+        resetCaptcha();
+        sliderHandle.focus();
+      }
+
+      function closeCaptcha() {
+        window.clearTimeout(captchaTimeoutTimer);
+        window.clearTimeout(captchaSuccessTimer);
+        captchaDragging = false;
+        captchaMask.classList.remove("show");
+        captchaMask.setAttribute("aria-hidden", "true");
+      }
+
+      function failCaptcha() {
+        if (captchaVerified) {
+          return;
+        }
+
+        window.clearTimeout(captchaTimeoutTimer);
+        captchaDragging = false;
+        captchaDialog.classList.add("timeout");
+        captchaStatus.className = "captcha-status error";
+        captchaStatus.textContent = "验证超时，请重试";
+        sliderText.textContent = "验证超时";
+        captchaRetry.hidden = false;
+        sliderHandle.disabled = true;
+      }
+
+      function passCaptcha() {
+        if (captchaVerified) {
+          return;
+        }
+
+        window.clearTimeout(captchaTimeoutTimer);
+        captchaDragging = false;
+        captchaVerified = true;
+        setCaptchaPosition(captchaMaxMove);
+        captchaDialog.classList.add("verified");
+        captchaStatus.className = "captcha-status success";
+        captchaStatus.textContent = "验证通过";
+        sliderText.textContent = "验证通过";
+        sliderHandle.disabled = true;
+        captchaRetry.hidden = true;
+        captchaSuccessTimer = window.setTimeout(() => {
+          closeCaptcha();
+          sendCodeAfterCaptcha();
+        }, 3000);
+      }
+
+      function startCaptchaDrag(clientX) {
+        if (captchaVerified || sliderHandle.disabled) {
+          return;
+        }
+
+        captchaDragging = true;
+        captchaStartX = clientX;
+        captchaStartTime = Date.now();
+        captchaDialog.classList.remove("timeout");
+        captchaStatus.className = "captcha-status";
+        captchaStatus.textContent = "保持按住，向右滑动";
+        captchaRetry.hidden = true;
+        window.clearTimeout(captchaTimeoutTimer);
+        captchaTimeoutTimer = window.setTimeout(() => {
+          if (captchaDragging && !captchaVerified) {
+            failCaptcha();
+          }
+        }, 2000);
+      }
+
+      function moveCaptchaDrag(clientX) {
+        if (!captchaDragging || captchaVerified) {
+          return;
+        }
+
+        const elapsed = Date.now() - captchaStartTime;
+        if (elapsed > 2000) {
+          failCaptcha();
+          return;
+        }
+
+        setCaptchaPosition(clientX - captchaStartX);
+
+        if (captchaCurrentMove >= captchaMaxMove - 6) {
+          passCaptcha();
+        }
+      }
+
+      function endCaptchaDrag() {
+        if (!captchaDragging || captchaVerified) {
+          return;
+        }
+
+        window.clearTimeout(captchaTimeoutTimer);
+        captchaDragging = false;
+
+        if (captchaCurrentMove >= captchaMaxMove - 6 && Date.now() - captchaStartTime <= 2000) {
+          passCaptcha();
+          return;
+        }
+
+        captchaStatus.textContent = "还差一点，请重新滑动";
+        setCaptchaPosition(0);
+      }
+
+      phoneInput.addEventListener("input", () => {
+        phoneInput.value = onlyDigits(phoneInput.value, 11);
+        updatePhoneError();
+        updateButtons();
+      });
+
+      phoneInput.addEventListener("blur", () => {
+        updatePhoneError(true);
+        updateButtons();
+      });
+
+      codeInput.addEventListener("input", () => {
+        codeInput.value = onlyDigits(codeInput.value, 6);
+        updateCodeError();
+        updateButtons();
+      });
+
+      codeInput.addEventListener("blur", () => {
+        updateCodeError(Boolean(codeInput.value));
+        updateButtons();
+      });
+
+      sendCodeButton.addEventListener("click", () => {
+        const now = Date.now();
+        recentSendClicks = recentSendClicks.filter((time) => now - time < 1000);
+        recentSendClicks.push(now);
+
+        if (recentSendClicks.length > 2) {
+          showToast("操作过于频繁，请稍后再试");
+          return;
+        }
+
+        if (!isPhoneValid()) {
+          updatePhoneError(true);
+          showToast("请输入合法手机号");
+          return;
+        }
+
+        openCaptcha();
+      });
+
+      sliderHandle.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        sliderHandle.setPointerCapture(event.pointerId);
+        startCaptchaDrag(event.clientX);
+      });
+
+      sliderHandle.addEventListener("pointermove", (event) => {
+        moveCaptchaDrag(event.clientX);
+      });
+
+      sliderHandle.addEventListener("pointerup", () => {
+        endCaptchaDrag();
+      });
+
+      sliderHandle.addEventListener("pointercancel", () => {
+        endCaptchaDrag();
+      });
+
+      captchaClose.addEventListener("click", closeCaptcha);
+      captchaRetry.addEventListener("click", resetCaptcha);
+
+      captchaMask.addEventListener("click", (event) => {
+        if (event.target === captchaMask) {
+          closeCaptcha();
+        }
+      });
+
+      document.querySelector(".login-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        updatePhoneError(true);
+        updateCodeError(true);
+
+        if (!isPhoneValid()) {
+          showToast("请输入合法手机号");
+          updateButtons();
+          return;
+        }
+
+        if (!isCodeValid()) {
+          showToast("请输入6位数字验证码");
+          updateButtons();
+          return;
+        }
+
+        if (!agreeInput.checked) {
+          showToast("您需要先同意《服务协议》《隐私协议》");
+          return;
+        }
+
+        loggingIn = true;
+        updateButtons();
+        loadingMask.classList.add("show");
+        loadingMask.setAttribute("aria-hidden", "false");
+
+        window.setTimeout(() => {
+          loggingIn = false;
+          loadingMask.classList.remove("show");
+          loadingMask.setAttribute("aria-hidden", "true");
+          updateButtons();
+          location.hash = "success";
+        }, 3000);
+      });
+
+      agreeInput.addEventListener("change", updateButtons);
+      window.addEventListener("hashchange", route);
+      route();
+      updateButtons();
+    </script>
+  </body>
+</html>
