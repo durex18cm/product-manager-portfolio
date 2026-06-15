@@ -19,6 +19,50 @@
         font-family: "Orbitron", sans-serif;
       }
 
+      .singularity-back {
+        position: fixed;
+        left: clamp(22px, 4vw, 56px);
+        top: clamp(84px, 8vw, 104px);
+        z-index: 10000;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(34, 211, 238, 0.68);
+        border-radius: 999px;
+        background: rgba(2, 13, 22, 0.42);
+        color: #dffcff;
+        box-shadow:
+          0 0 18px rgba(34, 211, 238, 0.22),
+          inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px) saturate(140%);
+        -webkit-backdrop-filter: blur(10px) saturate(140%);
+        cursor: pointer;
+        transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+      }
+
+      .singularity-back::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        margin-left: 4px;
+        border-left: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
+      }
+
+      .singularity-back:hover,
+      .singularity-back:focus-visible {
+        outline: none;
+        transform: translateX(-1px);
+        border-color: rgba(165, 243, 252, 0.96);
+        background: rgba(8, 145, 178, 0.24);
+        box-shadow:
+          0 0 24px rgba(34, 211, 238, 0.34),
+          inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      }
+
       .launch-gate {
         position: fixed;
         inset: 0;
@@ -146,8 +190,9 @@
     </style>
   </head>
   <body>
+    <button class="singularity-back" id="singularityBack" type="button" aria-label="返回上一界面"></button>
     <div id="root"></div>
-    <section class="launch-gate" id="launchGate" aria-label="启动奇点加速引擎">
+    <section class="launch-gate is-hidden" id="launchGate" aria-label="启动奇点加速引擎">
       <div class="launch-card">
         <div class="launch-kicker">Singularity Engine</div>
         <h1>奇点加速引擎</h1>
@@ -167,6 +212,7 @@
           : null;
         let grantedStream = null;
         let loaded = false;
+        let fallbackAnimation = null;
 
         function setStatus(message, isError = false) {
           const status = document.getElementById("launchStatus");
@@ -191,9 +237,79 @@
           return destination.stream.getAudioTracks()[0] || null;
         }
 
+        function createFallbackVideoTrack() {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1280;
+          canvas.height = 720;
+          const ctx = canvas.getContext("2d");
+
+          if (!ctx || !canvas.captureStream) {
+            throw new Error("当前浏览器无法创建备用摄像头画面。");
+          }
+
+          let frame = 0;
+          const draw = () => {
+            frame += 1;
+            const t = frame / 60;
+            const glow = 0.5 + Math.sin(t) * 0.5;
+
+            ctx.fillStyle = "#02070b";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const gradient = ctx.createRadialGradient(640, 360, 40, 640, 360, 680);
+            gradient.addColorStop(0, `rgba(34, 211, 238, ${0.24 + glow * 0.08})`);
+            gradient.addColorStop(0.45, "rgba(14, 116, 144, 0.12)");
+            gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "rgba(34, 211, 238, 0.18)";
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 80) {
+              ctx.beginPath();
+              ctx.moveTo(x + Math.sin(t + x * 0.01) * 8, 0);
+              ctx.lineTo(x, canvas.height);
+              ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 80) {
+              ctx.beginPath();
+              ctx.moveTo(0, y);
+              ctx.lineTo(canvas.width, y + Math.cos(t + y * 0.01) * 8);
+              ctx.stroke();
+            }
+
+            ctx.fillStyle = "#d9fbff";
+            ctx.font = "700 34px Orbitron, monospace";
+            ctx.textAlign = "center";
+            ctx.fillText("SINGULARITY ENGINE", 640, 328);
+            ctx.fillStyle = "rgba(216, 250, 255, 0.72)";
+            ctx.font = "600 24px Rajdhani, sans-serif";
+            ctx.fillText("CAMERA FALLBACK STREAM", 640, 372);
+
+            fallbackAnimation = requestAnimationFrame(draw);
+          };
+
+          draw();
+          const stream = canvas.captureStream(30);
+          const track = stream.getVideoTracks()[0];
+          window.__singularityFallbackVideo = { canvas, stream, stop: () => cancelAnimationFrame(fallbackAnimation) };
+          return track;
+        }
+
+        function createFallbackMediaStream() {
+          const stream = new MediaStream();
+          stream.addTrack(createFallbackVideoTrack());
+          const silentTrack = createSilentAudioTrack();
+          if (silentTrack) stream.addTrack(silentTrack);
+          window.__singularityCameraFallback = true;
+          window.__singularityMicrophoneFallback = true;
+          return stream;
+        }
+
         async function requestRealMedia() {
           if (!originalGetUserMedia) {
-            throw new Error("当前浏览器不支持摄像头/麦克风权限。");
+            setStatus("当前浏览器不支持摄像头权限，正在启用备用运行模式...");
+            return createFallbackMediaStream();
           }
 
           const video = {
@@ -205,12 +321,18 @@
           try {
             return await originalGetUserMedia({ video, audio: true });
           } catch (error) {
-            setStatus("麦克风可能被占用或拒绝，正在尝试仅启用摄像头...");
-            const videoOnly = await originalGetUserMedia({ video, audio: false });
-            const silentTrack = createSilentAudioTrack();
-            if (silentTrack) videoOnly.addTrack(silentTrack);
-            window.__singularityMicrophoneFallback = true;
-            return videoOnly;
+            try {
+              setStatus("麦克风可能被占用或拒绝，正在尝试仅启用摄像头...");
+              const videoOnly = await originalGetUserMedia({ video, audio: false });
+              const silentTrack = createSilentAudioTrack();
+              if (silentTrack) videoOnly.addTrack(silentTrack);
+              window.__singularityMicrophoneFallback = true;
+              return videoOnly;
+            } catch (fallbackError) {
+              console.warn("Singularity Engine camera permission failed, using fallback stream:", fallbackError);
+              setStatus("摄像头权限不可用，正在启用备用运行模式...");
+              return createFallbackMediaStream();
+            }
           }
         }
 
@@ -254,17 +376,21 @@
           setStatus("正在请求摄像头与麦克风权限...");
           try {
             grantedStream = await requestRealMedia();
-            setStatus("权限已通过，正在启动引擎...");
+            setStatus(window.__singularityCameraFallback ? "备用模式已启动，正在加载引擎..." : "权限已通过，正在启动引擎...");
             loadApp();
           } catch (error) {
             if (button) button.disabled = false;
             console.warn("Singularity Engine media permission failed:", error);
-            setStatus("权限未通过。请在浏览器地址栏允许摄像头/麦克风，然后点击重试。", true);
+            setStatus("启动失败。请刷新页面后重试，或在浏览器地址栏允许摄像头/麦克风。", true);
           }
         }
 
         window.addEventListener("DOMContentLoaded", () => {
           document.getElementById("launchButton")?.addEventListener("click", launch);
+          document.getElementById("singularityBack")?.addEventListener("click", () => {
+            window.location.href = "/index.html?debugWorks";
+          });
+          launch();
         });
       })();
     </script>

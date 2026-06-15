@@ -13,7 +13,7 @@ body,
 body {
   overflow: hidden;
   overscroll-behavior: none;
-  background: #07120f;
+  background: #152312;
   color: #f7f4eb;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -22,7 +22,7 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: #07120f;
+  background: #152312;
   user-select: none;
   touch-action: none;
   -webkit-user-select: none;
@@ -34,6 +34,11 @@ body {
   touch-action: none;
 }
 
+.app-shell.is-cinematic-forest canvas {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .app-shell canvas:active {
   cursor: grabbing;
 }
@@ -42,9 +47,442 @@ body {
   cursor: default;
 }
 
+.cinematic-forest-explorer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  --look: 0;
+  --scene-x: 0vw;
+  --near-x: 0vw;
+  --far-x: 0vw;
+  --head-tilt: 0deg;
+  --breath-y: 0vh;
+  --breath-scale: 1.018;
+  background: #152312;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: paint;
+}
+
+.cinematic-forest-explorer.is-intro-dim {
+  filter: brightness(0.08) saturate(0.78);
+}
+
+.cinematic-forest-explorer.is-intro-revealing {
+  animation: forestIntroReveal 1750ms cubic-bezier(0.2, 0.78, 0.2, 1) forwards;
+}
+
+.cinematic-forest-explorer::before,
+.cinematic-forest-explorer::after {
+  content: "";
+  position: absolute;
+  top: -8vh;
+  bottom: -8vh;
+  z-index: 3;
+  width: clamp(90px, 22vw, 260px);
+  pointer-events: none;
+  opacity: 0.74;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(80, 112, 64, 0.2), transparent 48%),
+    radial-gradient(ellipse at 50% 78%, rgba(8, 23, 13, 0.72), transparent 62%),
+    linear-gradient(90deg, rgba(5, 18, 11, 0.62), transparent);
+  mix-blend-mode: multiply;
+}
+
+.cinematic-forest-explorer::before {
+  left: -1px;
+}
+
+.cinematic-forest-explorer::after {
+  right: -1px;
+  transform: scaleX(-1);
+}
+
+.cinematic-forest-explorer.is-dragging {
+  cursor: grabbing;
+}
+
+.cinematic-forest-explorer.is-entering,
+.app-shell.has-works .cinematic-forest-explorer {
+  pointer-events: none;
+}
+
+.cinematic-forest-explorer.is-entering .forest-motes i,
+.cinematic-forest-explorer.is-entering .forest-drift-leaves i,
+.cinematic-forest-explorer.is-entering .forest-wind-lines,
+.cinematic-forest-explorer.is-entering .forest-hint-current,
+.cinematic-forest-explorer.is-entering .blue-mushroom-aura,
+.cinematic-forest-explorer.is-entering .blue-mushroom-cap,
+.cinematic-forest-explorer.is-entering .blue-mushroom-core,
+.cinematic-forest-explorer.is-entering .blue-mushroom-particles {
+  animation-play-state: paused;
+}
+
+.app-shell.has-works .cinematic-forest-explorer {
+  opacity: 0;
+}
+
+.forest-depth-layer,
+.forest-wind-lines,
+.forest-motes,
+.forest-drift-leaves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.forest-depth-layer {
+  background-image: url("/assets/mushroom-forest-cinematic.png");
+  background-repeat: repeat-x;
+  background-position: center;
+  background-size: auto 100%;
+  will-change: transform;
+}
+
+.forest-depth-back {
+  top: -10vmax;
+  bottom: -10vmax;
+  left: -110vw;
+  right: -110vw;
+  opacity: 0.28;
+  filter: blur(5px) saturate(0.92) brightness(1.06);
+  transform: translate3d(var(--far-x), calc(var(--breath-y) * -0.7), 0) scale(1.06) rotate(calc(var(--head-tilt) * 0.42));
+}
+
+.forest-depth-main {
+  top: -8vmax;
+  bottom: -8vmax;
+  left: -110vw;
+  right: -110vw;
+  opacity: 1;
+  filter: saturate(1.03) contrast(1.02);
+  transform: translate3d(var(--scene-x), var(--breath-y), 0) scale(calc(var(--breath-scale) + 0.018)) rotate(var(--head-tilt));
+}
+
+.forest-depth-main::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 42%, transparent 0 52%, rgba(0, 0, 0, 0.18) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), transparent 42%, rgba(0, 0, 0, 0.08));
+  opacity: 0.46;
+}
+
+.forest-depth-left,
+.forest-depth-right {
+  top: -9vmax;
+  bottom: -9vmax;
+  left: -110vw;
+  right: -110vw;
+  opacity: 0.2;
+  filter: blur(1.2px) saturate(1.04) brightness(1.02);
+  transform: translate3d(var(--near-x), calc(var(--breath-y) * 1.25), 0) scale(1.045) rotate(calc(var(--head-tilt) * 1.24));
+}
+
+.forest-depth-left {
+  clip-path: polygon(0 0, 37% 0, 28% 100%, 0 100%);
+  mask-image: linear-gradient(90deg, #000 0 42%, transparent 76%);
+}
+
+.forest-depth-right {
+  clip-path: polygon(66% 0, 100% 0, 100% 100%, 76% 100%);
+  mask-image: linear-gradient(270deg, #000 0 38%, transparent 78%);
+  transform: translate3d(calc(var(--near-x) * 0.72), calc(var(--breath-y) * 1.05), 0) scale(1.052) rotate(calc(var(--head-tilt) * 1.1));
+}
+
+.forest-wind-lines {
+  background:
+    linear-gradient(103deg, transparent 0 36%, rgba(255, 246, 208, 0.22) 37%, transparent 41%),
+    linear-gradient(108deg, transparent 0 54%, rgba(144, 214, 255, 0.14) 55%, transparent 58%),
+    linear-gradient(96deg, transparent 0 68%, rgba(255, 218, 133, 0.13) 69%, transparent 72%);
+  opacity: 0.16;
+  mix-blend-mode: screen;
+  transform: translate3d(calc(var(--near-x) * -0.34), calc(var(--breath-y) * -1.6), 0) rotate(calc(var(--head-tilt) * -0.7));
+  animation: forestWindBreath 9s ease-in-out infinite alternate;
+}
+
+.forest-motes i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: rgba(255, 214, 118, 0.72);
+  box-shadow: 0 0 10px rgba(255, 210, 104, 0.46);
+  opacity: 0;
+  transform: translate3d(calc(var(--look) * -10vw), 0, 0);
+  animation: forestMoteFloat var(--dur) ease-in-out var(--d) infinite;
+}
+
+.forest-drift-leaves i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: clamp(16px, 2.2vw, 30px);
+  height: clamp(7px, 1vw, 13px);
+  border-radius: 100% 0 100% 0;
+  background: linear-gradient(135deg, rgba(202, 159, 63, 0.78), rgba(66, 88, 31, 0.28));
+  box-shadow: 0 0 10px rgba(236, 178, 76, 0.16);
+  opacity: 0;
+  filter: blur(0.2px);
+  transform: rotate(var(--r));
+  animation: forestLeafDrift var(--dur) ease-in-out var(--d) infinite;
+}
+
+.forest-discovery-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(calc(var(--look) * 5.5vw), calc(var(--breath-y) * 0.72), 0);
+  animation: none;
+  will-change: opacity, transform;
+}
+
+.cinematic-forest-explorer.is-intro-ready .forest-discovery-hint {
+  animation: forestHintAppear 6400ms ease 1350ms forwards;
+}
+
+.forest-discovery-hint::before {
+  content: "";
+  position: absolute;
+  left: -18vw;
+  top: 24vh;
+  width: clamp(340px, 52vw, 720px);
+  height: clamp(360px, 56vh, 700px);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 42% 48%, rgba(211, 252, 255, 0.44), rgba(77, 194, 255, 0.28) 28%, rgba(38, 117, 235, 0.13) 56%, transparent 80%);
+  filter: blur(34px);
+  mix-blend-mode: screen;
+  transform: translate3d(calc(var(--look) * 2vw), calc(var(--breath-y) * 0.4), 0);
+  animation: forestHintLeftBloom 5.2s ease-in-out infinite;
+}
+
+.forest-discovery-hint::after {
+  content: "";
+  position: absolute;
+  left: clamp(0px, 4vw, 82px);
+  top: clamp(270px, 55vh, 575px);
+  width: clamp(94px, 14vw, 190px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(236, 255, 255, 0.7), rgba(91, 207, 255, 0.36) 23%, rgba(48, 123, 238, 0.13) 58%, transparent 78%);
+  filter: blur(17px);
+  mix-blend-mode: screen;
+  transform: translate3d(-45%, -42%, 0);
+  animation: forestHintBlueCore 2.9s ease-in-out infinite;
+}
+
+.cinematic-forest-explorer.is-dragging .forest-discovery-hint,
+.cinematic-forest-explorer.is-left-discovered .forest-discovery-hint,
+.cinematic-forest-explorer.is-entering .forest-discovery-hint,
+.app-shell.has-works .forest-discovery-hint {
+  opacity: 0;
+  animation: none;
+  transition: opacity 420ms ease;
+}
+
+.forest-hint-glow {
+  position: absolute;
+  left: clamp(-18px, 4vw, 92px);
+  top: clamp(238px, 51vh, 532px);
+  width: clamp(250px, 34vw, 470px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(222, 254, 255, 0.54), rgba(75, 198, 255, 0.32) 32%, rgba(42, 111, 230, 0.14) 60%, transparent 80%);
+  filter: blur(24px);
+  mix-blend-mode: screen;
+  transform: translate3d(-42%, -34%, 0);
+  animation: forestHintGlow 4.8s ease-in-out infinite;
+}
+
+.forest-hint-current {
+  position: absolute;
+  left: clamp(48px, 10vw, 196px);
+  top: clamp(242px, 48vh, 482px);
+  width: clamp(210px, 31vw, 480px);
+  height: 1px;
+  background: linear-gradient(90deg, rgba(128, 222, 255, 0), rgba(216, 253, 255, 0.92), rgba(89, 205, 255, 0.52), transparent);
+  filter: blur(0.3px) drop-shadow(0 0 16px rgba(93, 212, 255, 0.68));
+  opacity: 0.95;
+  transform: rotate(-10deg);
+  animation: forestHintCurrent 3.9s ease-in-out infinite;
+}
+
+.forest-discovery-hint p {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(76px, 12vh, 130px);
+  width: max-content;
+  max-width: min(74vw, 420px);
+  margin: 0;
+  color: rgba(227, 248, 255, 0.78);
+  font-size: clamp(12px, 1.45vw, 15px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-shadow:
+    0 0 16px rgba(91, 201, 255, 0.42),
+    0 2px 20px rgba(0, 0, 0, 0.46);
+  transform: translateX(-50%);
+  animation: forestHintTextBreath 2.8s ease-in-out infinite;
+}
+
+.blue-mushroom-gate {
+  position: absolute;
+  left: clamp(16px, 10vw, 160px);
+  top: clamp(282px, 60vh, 600px);
+  z-index: 4;
+  width: clamp(62px, 7.8vw, 112px);
+  height: clamp(78px, 9.8vw, 140px);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(calc(-104px + var(--look) * 190px), calc(var(--breath-y) * 0.35), 0) scale(0.78);
+  filter: saturate(0.88) brightness(0.92);
+  transition: opacity 900ms ease, filter 900ms ease;
+  will-change: transform, opacity;
+}
+
+.cinematic-forest-explorer.is-left-discovered .blue-mushroom-gate {
+  opacity: 0.82;
+  pointer-events: auto;
+  filter: saturate(0.98) brightness(0.96);
+}
+
+.blue-mushroom-gate:disabled {
+  pointer-events: none;
+}
+
+.blue-mushroom-gate:focus-visible {
+  outline: 1px solid rgba(137, 230, 255, 0.7);
+  outline-offset: 8px;
+}
+
+.intro-video-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 14;
+  overflow: hidden;
+  background: #020403;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 1500ms cubic-bezier(0.2, 0.78, 0.2, 1), visibility 1500ms ease;
+}
+
+.intro-video-layer.is-ending {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.intro-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: #020403;
+}
+
+.blue-mushroom-aura,
+.blue-mushroom-cap,
+.blue-mushroom-stem,
+.blue-mushroom-core,
+.blue-mushroom-particles {
+  position: absolute;
+  left: 50%;
+  pointer-events: none;
+}
+
+.blue-mushroom-aura {
+  top: 48%;
+  width: 150%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(190, 246, 255, 0.34), rgba(64, 159, 255, 0.14) 27%, rgba(31, 104, 190, 0.055) 58%, transparent 75%);
+  transform: translate(-50%, -50%);
+  filter: blur(13px);
+  mix-blend-mode: screen;
+  animation: blueAuraBreathe 3.2s ease-in-out infinite;
+}
+
+.blue-mushroom-cap {
+  top: 18%;
+  width: 82%;
+  height: 37%;
+  border-radius: 58% 58% 44% 44% / 78% 78% 28% 28%;
+  background:
+    radial-gradient(circle at 30% 32%, rgba(255, 255, 255, 0.72) 0 4%, transparent 5.4%),
+    radial-gradient(circle at 62% 25%, rgba(231, 253, 255, 0.54) 0 3.5%, transparent 5%),
+    radial-gradient(circle at 78% 55%, rgba(193, 244, 255, 0.48) 0 4%, transparent 5.6%),
+    linear-gradient(180deg, rgba(166, 236, 245, 0.8), rgba(58, 148, 225, 0.7) 46%, rgba(16, 65, 151, 0.78));
+  box-shadow:
+    0 0 18px rgba(83, 206, 255, 0.42),
+    inset 0 -10px 18px rgba(14, 55, 132, 0.5),
+    inset 0 8px 15px rgba(255, 255, 255, 0.3);
+  transform: translateX(-50%) rotate(-2deg);
+  animation: blueCapBreathe 3.2s ease-in-out infinite;
+}
+
+.blue-mushroom-stem {
+  top: 47%;
+  width: 25%;
+  height: 42%;
+  border-radius: 46% 46% 30% 30%;
+  background: linear-gradient(90deg, rgba(73, 135, 192, 0.6), rgba(220, 248, 251, 0.76) 44%, rgba(58, 112, 183, 0.58));
+  box-shadow:
+    0 0 14px rgba(102, 216, 255, 0.36),
+    inset 0 -8px 14px rgba(24, 68, 140, 0.34);
+  transform: translateX(-50%);
+}
+
+.blue-mushroom-core {
+  top: 44%;
+  width: 68%;
+  height: 14%;
+  border-radius: 999px;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.86), rgba(127, 225, 255, 0.5) 38%, transparent 72%);
+  filter: blur(3px);
+  transform: translateX(-50%);
+  mix-blend-mode: screen;
+  animation: blueCorePulse 2.8s ease-in-out infinite;
+}
+
+.blue-mushroom-particles {
+  top: 6%;
+  width: 150%;
+  height: 120%;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 14% 35%, rgba(201, 251, 255, 0.7) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 72% 22%, rgba(122, 217, 255, 0.62) 0 0.9px, transparent 1.8px),
+    radial-gradient(circle at 86% 61%, rgba(215, 253, 255, 0.58) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 38% 82%, rgba(107, 205, 255, 0.54) 0 0.9px, transparent 1.8px);
+  opacity: 0.54;
+  filter: drop-shadow(0 0 8px rgba(99, 212, 255, 0.62));
+  animation: blueParticleOrbit 4.2s ease-in-out infinite;
+}
+
 .quiet-overlay {
   position: fixed;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
   transition: opacity 900ms ease;
 }
@@ -62,10 +500,10 @@ body {
   align-items: center;
   gap: 10px;
   padding: 8px 14px 8px 10px;
-  border: 1px solid rgba(232, 255, 239, 0.16);
+  border: 1px solid rgba(255, 238, 184, 0.22);
   border-radius: 999px;
-  background: rgba(4, 13, 10, 0.32);
-  color: rgba(247, 244, 235, 0.78);
+  background: rgba(40, 28, 11, 0.28);
+  color: rgba(255, 246, 220, 0.84);
   font-size: 14px;
   font-weight: 800;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
@@ -96,18 +534,247 @@ body {
   animation: fadeChrome 4s ease 5.2s forwards;
 }
 
-.entry-loader {
+.app-shell.has-intro .brand-pill,
+.app-shell.has-intro .ambient-line {
+  opacity: 0;
+  animation: introChromeIn 0.9s ease 5.35s forwards;
+}
+
+.entry-flight {
   position: fixed;
   inset: 0;
-  z-index: 10;
-  display: grid;
-  place-items: center;
-  color: rgba(255, 255, 255, 0.7);
-  background: #07120f;
-  font-size: 13px;
-  font-weight: 800;
+  z-index: 12;
+  overflow: hidden;
   pointer-events: none;
-  animation: leaveLoader 1.25s ease 0.45s forwards;
+  background: #160d05;
+  animation: entryFlightShell 5.45s linear forwards;
+  contain: paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: opacity, visibility;
+}
+
+.entry-flight-scene,
+.entry-flight-horizon,
+.entry-flight-tunnel,
+.entry-flight-rings,
+.entry-flight-foreground,
+.entry-flight-dust,
+.entry-flight-wind,
+.entry-flight-leaves {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.entry-flight-scene {
+  background:
+    radial-gradient(circle at 50% 43%, rgba(255, 230, 164, 0.22), transparent 24%),
+    url("/assets/mushroom-forest.png") center / cover no-repeat;
+  opacity: 1;
+  filter: saturate(1.08) brightness(0.96) contrast(1.03);
+  transform: scale(1.12) translate3d(0, 0.7%, 0);
+  transform-origin: 50% 48%;
+  animation: entryForestDrift 5s cubic-bezier(0.18, 0.74, 0.12, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.entry-flight-scene::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background:
+    radial-gradient(circle at 50% 47%, transparent 0 34%, rgba(255, 217, 126, 0.08) 49%, rgba(8, 10, 5, 0.18) 78%),
+    linear-gradient(180deg, rgba(255, 232, 168, 0.08), transparent 38%, rgba(8, 11, 4, 0.16));
+  opacity: 0.5;
+  animation: entryLightBreath 5s ease forwards;
+  will-change: opacity;
+}
+
+.entry-flight-horizon {
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(255, 239, 190, 0.18) 0 9%, rgba(255, 204, 103, 0.12) 17%, transparent 36%),
+    radial-gradient(ellipse at 50% 49%, transparent 0 26%, rgba(38, 20, 6, 0.15) 42%, rgba(3, 2, 1, 0.22) 82%);
+  opacity: 0.24;
+  animation: entryHorizonOpen 5s ease forwards;
+  will-change: opacity, transform;
+}
+
+.entry-flight-tunnel {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 50% 48%, transparent 0 25%, rgba(83, 42, 12, 0.52) 36%, rgba(20, 9, 2, 0.84) 67%),
+    radial-gradient(ellipse at 4% 50%, rgba(23, 11, 3, 0.98) 0 34%, transparent 61%),
+    radial-gradient(ellipse at 96% 48%, rgba(23, 11, 3, 0.9) 0 30%, transparent 62%),
+    radial-gradient(ellipse at 48% -5%, rgba(35, 17, 4, 0.98) 0 26%, transparent 60%),
+    radial-gradient(ellipse at 52% 110%, rgba(21, 9, 2, 0.78) 0 28%, transparent 67%);
+  transform: scale(0.98) translate3d(0, 0, 0);
+  animation: entryTunnelOpen 5s cubic-bezier(0.18, 0.74, 0.12, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.entry-flight-tunnel::before,
+.entry-flight-tunnel::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  background:
+    repeating-linear-gradient(102deg, rgba(255, 185, 76, 0.04) 0 10px, rgba(23, 11, 3, 0.34) 11px 23px, rgba(137, 68, 18, 0.22) 24px 32px),
+    radial-gradient(ellipse at 21% 55%, rgba(126, 62, 17, 0.5), transparent 39%),
+    radial-gradient(ellipse at 78% 44%, rgba(108, 50, 13, 0.42), transparent 37%);
+  opacity: 0.62;
+  animation: entryBarkFlow 5s linear forwards;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.entry-flight::before {
+  content: "";
+  position: absolute;
+  inset: -6%;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 48%, transparent 0 26%, rgba(255, 191, 90, 0.08) 31%, transparent 37%),
+    radial-gradient(ellipse at 50% 48%, transparent 0 39%, rgba(54, 24, 7, 0.34) 54%, rgba(10, 4, 1, 0.72) 76%, rgba(3, 1, 0, 0.92) 100%);
+  opacity: 1;
+  transform: scale(0.94);
+  animation: entryHoleRim 5s cubic-bezier(0.18, 0.74, 0.12, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.entry-flight-tunnel::after {
+  background:
+    radial-gradient(circle at 35% 44%, rgba(255, 199, 86, 0.28) 0 1px, transparent 2px),
+    radial-gradient(circle at 68% 32%, rgba(255, 236, 168, 0.22) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 68%, rgba(255, 166, 64, 0.22) 0 1px, transparent 2px);
+  background-size: 160px 120px, 210px 160px, 180px 140px;
+  opacity: 0.48;
+  animation: entrySparkDrift 5s linear forwards;
+}
+
+.entry-flight-rings {
+  z-index: 3;
+  overflow: hidden;
+  contain: paint;
+}
+
+.entry-flight-rings span {
+  position: absolute;
+  left: 50%;
+  top: 49%;
+  width: 58vmax;
+  height: 36vmax;
+  border-radius: 50%;
+  border: clamp(10px, 2.4vw, 26px) solid rgba(96, 45, 12, 0.48);
+  box-shadow:
+    inset 0 0 30px rgba(255, 174, 76, 0.16),
+    0 0 26px rgba(0, 0, 0, 0.42);
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0) rotate(var(--tilt)) scale(var(--scale));
+  animation: entryRingPass 5s cubic-bezier(0.18, 0.74, 0.12, 1) var(--d) forwards;
+  will-change: transform, opacity;
+}
+
+.entry-flight-foreground {
+  z-index: 4;
+  overflow: hidden;
+  contain: paint;
+}
+
+.entry-flight-foreground span {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  border-radius: 45% 55% 16% 16%;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(255, 177, 66, 0.48), transparent 18%),
+    linear-gradient(90deg, rgba(20, 9, 2, 0.1), rgba(72, 34, 9, 0.76) 28%, rgba(133, 63, 16, 0.6) 52%, rgba(31, 13, 3, 0.2)),
+    repeating-linear-gradient(96deg, rgba(255, 198, 95, 0.08) 0 5px, rgba(34, 14, 3, 0.4) 6px 14px);
+  opacity: 0;
+  filter: blur(0.2px);
+  transform: translate3d(0, 0, 0) rotate(var(--r)) scale(0.72);
+  animation: entryForegroundPass var(--dur) cubic-bezier(0.18, 0.74, 0.14, 1) var(--d) infinite;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.entry-flight-foreground span:nth-child(3n) {
+  width: clamp(52px, 9vw, 118px);
+  height: clamp(34px, 6vw, 82px);
+  border-radius: 55% 55% 28% 28%;
+  background:
+    radial-gradient(circle at 38% 28%, rgba(255, 244, 185, 0.75) 0 4px, transparent 5px),
+    radial-gradient(circle at 62% 38%, rgba(255, 244, 185, 0.65) 0 3px, transparent 4px),
+    radial-gradient(ellipse at 50% 30%, rgba(219, 56, 32, 0.86), rgba(132, 28, 15, 0.72) 62%, rgba(52, 18, 6, 0.2) 72%),
+    linear-gradient(90deg, transparent 44%, rgba(255, 209, 128, 0.54) 47% 53%, transparent 57%);
+  filter: blur(0.15px) drop-shadow(0 0 14px rgba(255, 161, 55, 0.2));
+}
+
+.entry-flight-dust {
+  z-index: 5;
+  overflow: hidden;
+  contain: paint;
+}
+
+.entry-flight-wind {
+  z-index: 6;
+  contain: paint;
+}
+
+.entry-flight-leaves {
+  z-index: 7;
+  contain: paint;
+}
+
+.entry-flight-dust i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 999px;
+  background: rgba(255, 218, 140, 0.72);
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(0.35);
+  animation: entryDustFlow var(--dur) linear var(--d) infinite;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.entry-flight-wind i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: clamp(90px, 16vw, 230px);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 245, 205, 0.64), rgba(255, 184, 86, 0.12), transparent);
+  opacity: 0;
+  transform: translate3d(-30vw, 0, 0) rotate(var(--r));
+  animation: entryWindRush var(--dur) cubic-bezier(0.2, 0.72, 0.16, 1) var(--d) infinite;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.entry-flight-leaves i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: clamp(10px, 1.4vw, 18px);
+  height: clamp(5px, 0.8vw, 10px);
+  border-radius: 80% 20% 80% 20%;
+  background: linear-gradient(135deg, #ffd272, #b95a20 54%, #55320f);
+  opacity: 0;
+  transform: translate3d(0, 0, 0) rotate(var(--r)) scale(0.72);
+  animation: entryLeafRush 4.2s cubic-bezier(0.2, 0.72, 0.18, 1) var(--d) forwards;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .page-dip {
@@ -355,6 +1022,68 @@ body {
   animation: moteJourney 7.1s ease-in-out var(--d) forwards;
 }
 
+.cinematic-transition {
+  animation: transitionShell 2.4s linear forwards;
+  contain: paint;
+}
+
+.cinematic-transition::before {
+  animation: transitionVoid 2.4s ease-in-out forwards;
+}
+
+.cinematic-transition::after {
+  animation: transitionLens 2.4s ease-in-out forwards;
+}
+
+.transition-wake {
+  animation: wakeStage 1.55s ease-out forwards;
+}
+
+.wake-bloom,
+.wake-pulse {
+  animation-duration: 1.55s;
+}
+
+.transition-vortex {
+  animation: vortexStage 1.8s ease-out forwards;
+}
+
+.transition-vortex span {
+  animation-duration: 1.65s !important;
+}
+
+.transition-vortex span:nth-child(3) {
+  display: none;
+}
+
+.transition-dissolve,
+.transition-rebuild {
+  display: none;
+}
+
+.transition-between {
+  animation: betweenStage 1.35s ease-out 0.72s forwards;
+}
+
+.void-bands {
+  filter: none;
+  animation: voidBandDrift 1.35s ease-out 0.72s forwards;
+}
+
+.guide-spore {
+  animation: guideSpore 1.35s ease-out 0.72s forwards;
+  box-shadow: 0 0 22px rgba(113, 223, 255, 0.62), 0 0 64px rgba(28, 135, 255, 0.32);
+}
+
+.spore-halo {
+  animation: sporeHalo 1.35s ease-out 0.72s forwards;
+}
+
+.transition-motes i {
+  box-shadow: 0 0 8px rgba(90, 211, 255, 0.48);
+  animation: moteJourney 2.2s ease-out var(--d) forwards;
+}
+
 .works-portal {
   position: fixed;
   inset: 0;
@@ -373,6 +1102,10 @@ body {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1);
+}
+
+.app-shell.has-works .works-portal {
+  transition: none;
 }
 
 .works-card {
@@ -569,6 +1302,225 @@ body {
   pointer-events: none;
   animation: lifeSideFade 3s ease forwards;
 }
+
+.works-portal.is-opening-violet .works-card {
+  transform-origin: 78.5% 58%;
+  animation: cosmosWorldIgnite 3s cubic-bezier(0.24, 0.72, 0.16, 1) forwards;
+  will-change: transform;
+}
+
+.works-portal.is-opening-violet .works-back,
+.works-portal.is-opening-violet .work-node:not(.is-opening) {
+  pointer-events: none;
+  animation: cosmosSideFade 3s ease forwards;
+}
+
+.works-portal[class*="is-opening"] .works-bg,
+.works-portal[class*="is-opening"] .works-bg::before,
+.works-portal[class*="is-opening"] .works-bg::after,
+.works-portal[class*="is-opening"] .works-rays,
+.works-portal[class*="is-opening"] .works-fireflies,
+.works-portal[class*="is-opening"] .tree-leaves circle {
+  animation-play-state: paused !important;
+}
+
+.works-portal[class*="is-opening"] .works-card,
+.works-portal[class*="is-opening"] .work-orb,
+.works-portal[class*="is-opening"] .fruit-crack {
+  filter: none !important;
+}
+
+.works-portal[class*="is-opening"] .works-card,
+.works-portal[class*="is-opening"] .work-orb,
+.works-portal[class*="is-opening"] .fruit-world-release,
+.works-portal[class*="is-opening"] .life-world-release,
+.works-portal[class*="is-opening"] .cosmos-world-release {
+  contain: paint;
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+.works-portal[class*="is-opening"] .works-card,
+.works-portal[class*="is-opening"] .works-back,
+.works-portal[class*="is-opening"] .work-node:not(.is-opening),
+.works-portal[class*="is-opening"] .work-copy,
+.works-portal[class*="is-opening"] .hanging-thread,
+.works-portal[class*="is-opening"] .work-orb,
+.works-portal[class*="is-opening"] .work-orb::before,
+.works-portal[class*="is-opening"] .work-orb::after,
+.works-portal[class*="is-opening"] .work-orb i,
+.works-portal[class*="is-opening"] .fruit-crack,
+.works-portal[class*="is-opening"] .fruit-beam,
+.works-portal[class*="is-opening"] .fruit-vortex,
+.works-portal[class*="is-opening"] .fruit-world-release,
+.works-portal[class*="is-opening"] .fruit-world-release::before,
+.works-portal[class*="is-opening"] .fruit-world-release::after,
+.works-portal[class*="is-opening"] .fruit-world-release span,
+.works-portal[class*="is-opening"] .life-world-release,
+.works-portal[class*="is-opening"] .life-world-release::before,
+.works-portal[class*="is-opening"] .life-world-release::after,
+.works-portal[class*="is-opening"] .life-world-release span,
+.works-portal[class*="is-opening"] .life-world-release b,
+.works-portal[class*="is-opening"] .life-world-release i,
+.works-portal[class*="is-opening"] .cosmos-world-release,
+.works-portal[class*="is-opening"] .cosmos-world-release::before,
+.works-portal[class*="is-opening"] .cosmos-world-release::after,
+.works-portal[class*="is-opening"] .cosmos-world-release span,
+.works-portal[class*="is-opening"] .cosmos-world-release b,
+.works-portal[class*="is-opening"] .cosmos-world-release i {
+  animation-duration: 1.65s !important;
+}
+
+.works-portal[class*="is-opening"] .fruit-beam {
+  filter: blur(3px) !important;
+}
+
+.cosmos-world-release {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78.5% 58%, rgba(255, 255, 255, 0.36) 0 0.7%, transparent 3.8%),
+    radial-gradient(circle at 78.5% 58%, rgba(254, 248, 255, 0.98) 0 1.4%, rgba(214, 145, 255, 0.62) 5%, rgba(126, 67, 255, 0.28) 18%, transparent 38%),
+    radial-gradient(circle at 78.5% 58%, transparent 0 18%, rgba(185, 89, 255, 0.18) 22%, transparent 33%),
+    radial-gradient(ellipse at 65% 42%, rgba(85, 56, 255, 0.2), transparent 48%),
+    linear-gradient(116deg, transparent 0 38%, rgba(211, 132, 255, 0.12) 48%, transparent 62%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform-origin: 78.5% 58%;
+  will-change: transform, opacity;
+  animation: cosmosReleaseBloom 3s cubic-bezier(0.24, 0.72, 0.16, 1) forwards;
+}
+
+.cosmos-world-release::before,
+.cosmos-world-release::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.cosmos-world-release::before {
+  background:
+    radial-gradient(circle at 62% 28%, rgba(247, 222, 255, 0.9) 0 1px, transparent 2.4px),
+    radial-gradient(circle at 88% 34%, rgba(180, 131, 255, 0.86) 0 1.2px, transparent 2.6px),
+    radial-gradient(circle at 72% 72%, rgba(255, 255, 255, 0.78) 0 1px, transparent 2.2px),
+    radial-gradient(circle at 94% 63%, rgba(217, 156, 255, 0.75) 0 1.1px, transparent 2.4px),
+    linear-gradient(72deg, transparent 0 48%, rgba(243, 214, 255, 0.24) 52%, transparent 58%),
+    linear-gradient(128deg, transparent 0 39%, rgba(168, 91, 255, 0.22) 45%, transparent 56%);
+  background-size: 180px 140px, 230px 190px, 260px 220px, 310px 260px, auto, auto;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform-origin: 78.5% 58%;
+  will-change: transform, opacity;
+  animation: cosmosRaySweep 3s ease forwards;
+}
+
+.cosmos-world-release::after {
+  background:
+    conic-gradient(from 140deg at 78.5% 58%, transparent 0 9%, rgba(232, 177, 255, 0.16) 11% 13%, transparent 15% 32%, rgba(124, 93, 255, 0.13) 35% 37%, transparent 40% 100%),
+    radial-gradient(circle at 78.5% 58%, rgba(255, 255, 255, 0.76), rgba(231, 164, 255, 0.5) 15%, rgba(123, 70, 255, 0.3) 38%, rgba(8, 3, 28, 0.18) 66%, transparent 82%),
+    radial-gradient(circle at 78.5% 58%, transparent 0 25%, rgba(252, 234, 255, 0.22) 26% 27%, transparent 30%);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform-origin: 78.5% 58%;
+  will-change: transform, opacity;
+  animation: cosmosScreenWash 3s ease forwards;
+}
+
+.cosmos-world-release span {
+  position: absolute;
+  left: 78.5%;
+  top: 58%;
+  width: 22vmin;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(236, 211, 255, 0.56);
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.46), transparent 18%),
+    conic-gradient(from 0deg, transparent 0 12%, rgba(236, 178, 255, 0.72) 15% 20%, transparent 24% 47%, rgba(138, 91, 255, 0.54) 52% 58%, transparent 63% 100%);
+  box-shadow: 0 0 34px rgba(190, 92, 255, 0.44), inset 0 0 24px rgba(234, 196, 255, 0.26);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform: translate(-50%, -50%) rotate(0deg) scale(0.34);
+  will-change: transform, opacity;
+  animation: cosmosRingExpand 3s cubic-bezier(0.32, 0.02, 0.16, 1) forwards;
+}
+
+.cosmos-world-release span:nth-child(2) {
+  width: 43vmin;
+  animation-delay: 0.08s;
+  animation-duration: 2.9s;
+}
+
+.cosmos-world-release span:nth-child(3) {
+  width: 72vmin;
+  animation-delay: 0.15s;
+  opacity: 0.44;
+}
+
+.cosmos-world-release i {
+  position: absolute;
+  left: 78.5%;
+  top: 58%;
+  width: clamp(5px, 0.7vw, 10px);
+  height: clamp(86px, 14vw, 190px);
+  border-radius: 999px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.88), rgba(196, 108, 255, 0.46), transparent);
+  box-shadow: 0 0 22px rgba(210, 132, 255, 0.62);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform: translate(-50%, -50%) rotate(var(--ray-rotate)) scaleY(0.18);
+  will-change: transform, opacity;
+  animation: cosmosShardFlash 3s ease forwards;
+}
+
+.cosmos-world-release i:nth-of-type(1) { --ray-rotate: 32deg; animation-delay: 0.1s; }
+.cosmos-world-release i:nth-of-type(2) { --ray-rotate: 96deg; animation-delay: 0.18s; }
+.cosmos-world-release i:nth-of-type(3) { --ray-rotate: 148deg; animation-delay: 0.26s; }
+
+.cosmos-world-release b {
+  position: absolute;
+  left: 78.5%;
+  top: 58%;
+  width: clamp(96px, 14vmin, 180px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(237, 211, 255, 0.22);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform: translate(-50%, -50%) rotate(var(--glyph-rotate)) scale(0.52);
+  will-change: transform, opacity;
+  animation: cosmosGlyphOrbit 3s cubic-bezier(0.3, 0.04, 0.18, 1) forwards;
+}
+
+.cosmos-world-release b::before,
+.cosmos-world-release b::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(251, 240, 255, 0.82);
+  box-shadow: 0 0 12px rgba(218, 144, 255, 0.62);
+}
+
+.cosmos-world-release b::before {
+  left: 50%;
+  top: -3px;
+  width: 4px;
+  height: 4px;
+}
+
+.cosmos-world-release b::after {
+  right: 11%;
+  bottom: 15%;
+  width: 3px;
+  height: 3px;
+}
+
+.cosmos-world-release b:nth-of-type(1) { --glyph-rotate: 24deg; animation-delay: 0.08s; }
+.cosmos-world-release b:nth-of-type(2) { --glyph-rotate: 112deg; width: clamp(140px, 19vmin, 260px); animation-delay: 0.16s; }
+.cosmos-world-release b:nth-of-type(3) { --glyph-rotate: 206deg; width: clamp(190px, 26vmin, 340px); animation-delay: 0.24s; }
 
 .life-world-release {
   position: absolute;
@@ -1169,6 +2121,65 @@ body {
   animation: goldLifeVortex 3s cubic-bezier(0.32, 0.02, 0.16, 1) forwards;
 }
 
+.node-violet.is-opening {
+  z-index: 16;
+}
+
+.node-violet.is-opening .work-copy,
+.node-violet.is-opening .hanging-thread {
+  animation: cosmosLabelAscend 3s ease forwards;
+}
+
+.node-violet.is-opening .work-orb {
+  pointer-events: none;
+  will-change: transform;
+  animation: violetFruitRadiance 3s cubic-bezier(0.24, 0.72, 0.16, 1) forwards;
+}
+
+.node-violet.is-opening .work-orb::before {
+  animation: violetCrownScatter 3s cubic-bezier(0.24, 0.72, 0.16, 1) forwards;
+}
+
+.node-violet.is-opening .work-orb::after {
+  animation: violetParticlesSupernova 3s cubic-bezier(0.24, 0.72, 0.16, 1) forwards;
+}
+
+.node-violet.is-opening .work-orb i {
+  animation: violetCoreMystery 3s cubic-bezier(0.24, 0.72, 0.16, 1) forwards;
+}
+
+.node-violet.is-opening .fruit-crack {
+  inset: 14%;
+  background:
+    linear-gradient(54deg, transparent 0 44%, rgba(253, 229, 255, 0.86) 45.5% 47.2%, rgba(185, 91, 255, 0.18) 48.2%, transparent 51%),
+    linear-gradient(113deg, transparent 0 48%, rgba(235, 187, 255, 0.7) 50% 51.6%, transparent 54%),
+    linear-gradient(18deg, transparent 0 55%, rgba(154, 103, 255, 0.5) 57% 58.2%, transparent 61%),
+    radial-gradient(ellipse at 50% 24%, rgba(255, 244, 255, 0.68), rgba(184, 91, 255, 0.2) 23%, transparent 38%);
+  filter: drop-shadow(0 0 8px rgba(219, 151, 255, 0.72));
+  animation: violetCrackFlash 3s ease forwards;
+}
+
+.node-violet.is-opening .fruit-beam {
+  width: clamp(76px, 15vmin, 190px);
+  height: 118vmax;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 255, 255, 0.72), rgba(231, 176, 255, 0.46) 18%, rgba(144, 82, 255, 0.2) 46%, transparent 80%),
+    linear-gradient(to bottom, transparent 0 12%, rgba(247, 223, 255, 0.5) 31%, rgba(162, 89, 255, 0.22) 64%, transparent 96%);
+  filter: blur(7px);
+  will-change: transform, opacity;
+  transform: translate(-50%, -50%) rotate(-9deg) scaleY(0.08);
+  animation: violetBeamIgnite 3s cubic-bezier(0.24, 0.72, 0.16, 1) forwards;
+}
+
+.node-violet.is-opening .fruit-vortex {
+  border-color: rgba(236, 207, 255, 0.66);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.84), transparent 21%),
+    conic-gradient(from 0deg, transparent 0 14%, rgba(234, 157, 255, 0.82) 17% 24%, transparent 29% 52%, rgba(136, 89, 255, 0.66) 57% 64%, transparent 70% 100%);
+  box-shadow: 0 0 38px rgba(196, 92, 255, 0.68), inset 0 0 22px rgba(236, 197, 255, 0.34);
+  animation: violetVortexOpen 3s cubic-bezier(0.32, 0.02, 0.16, 1) forwards;
+}
+
 .node-gold {
   --orb: #ffd36d;
   --glow: rgba(255, 208, 76, 0.64);
@@ -1222,16 +2233,473 @@ body {
   transform: rotate(-45deg);
 }
 
-@keyframes leaveLoader {
-  to {
+@keyframes forestIntroReveal {
+  0% {
+    filter: brightness(0.08) saturate(0.78);
+  }
+  34% {
+    filter: brightness(0.2) saturate(0.86);
+  }
+  72% {
+    filter: brightness(0.72) saturate(0.96);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes forestWindBreath {
+  0% {
+    opacity: 0.08;
+    transform: translate3d(calc(var(--near-x) * -0.26), calc(var(--breath-y) * -1.1), 0) rotate(calc(var(--head-tilt) * -0.55));
+  }
+  48% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.12;
+    transform: translate3d(calc(var(--near-x) * -0.42 + 1.8vw), calc(var(--breath-y) * -1.8 - 0.6vh), 0) rotate(calc(var(--head-tilt) * -0.8));
+  }
+}
+
+@keyframes forestMoteFloat {
+  0% {
     opacity: 0;
-    visibility: hidden;
+    transform: translate3d(calc(var(--look) * -10vw), 0.4vh, 0) scale(0.75);
+  }
+  18% {
+    opacity: 0.46;
+  }
+  52% {
+    opacity: 0.32;
+    transform: translate3d(calc(var(--look) * -13vw + 0.8vw), -1.1vh, 0) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--look) * -16vw + 1.4vw), -2.8vh, 0) scale(0.82);
+  }
+}
+
+@keyframes forestLeafDrift {
+  0% {
+    opacity: 0;
+    transform: translate3d(calc(var(--look) * -5vw), 0, 0) rotate(var(--r)) scale(0.72);
+  }
+  18% {
+    opacity: 0.18;
+  }
+  58% {
+    opacity: 0.22;
+    transform: translate3d(calc(var(--look) * -9vw + 2.6vw), -1.2vh, 0) rotate(calc(var(--r) + 16deg)) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--look) * -13vw + 5.6vw), -2.7vh, 0) rotate(calc(var(--r) + 36deg)) scale(0.7);
+  }
+}
+
+@keyframes forestHintAppear {
+  0%,
+  10% {
+    opacity: 0;
+  }
+  20%,
+  68% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes forestHintLeftBloom {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: translate3d(calc(var(--look) * 2vw - 4px), calc(var(--breath-y) * 0.4 + 3px), 0) scale(0.94);
+  }
+  42% {
+    opacity: 1;
+    transform: translate3d(calc(var(--look) * 2vw + 8px), calc(var(--breath-y) * 0.4 - 3px), 0) scale(1.08);
+  }
+  68% {
+    opacity: 0.72;
+    transform: translate3d(calc(var(--look) * 2vw + 3px), calc(var(--breath-y) * 0.4), 0) scale(1.02);
+  }
+}
+
+@keyframes forestHintBlueCore {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translate3d(-45%, -42%, 0) scale(0.88);
+  }
+  44% {
+    opacity: 1;
+    transform: translate3d(-38%, -45%, 0) scale(1.18);
+  }
+}
+
+@keyframes forestHintGlow {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: translate3d(-42%, -34%, 0) scale(0.94);
+  }
+  52% {
+    opacity: 1;
+    transform: translate3d(-38%, -36%, 0) scale(1.08);
+  }
+}
+
+@keyframes forestHintTextBreath {
+  0%,
+  100% {
+    opacity: 0.74;
+    transform: translateX(-50%) translateY(0) scale(0.985);
+  }
+  48% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-1px) scale(1.015);
+  }
+}
+
+@keyframes forestHintCurrent {
+  0% {
+    opacity: 0;
+    transform: translate3d(18px, 3px, 0) rotate(-9deg) scaleX(0.55);
+  }
+  34% {
+    opacity: 0.62;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-82px, -8px, 0) rotate(-9deg) scaleX(1);
+  }
+}
+
+@keyframes blueAuraBreathe {
+  0%,
+  100% {
+    opacity: 0.48;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+  50% {
+    opacity: 0.82;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes blueCapBreathe {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-1px) scale(1.035);
+    filter: brightness(1.18);
+  }
+}
+
+@keyframes blueCorePulse {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: translateX(-50%) scaleX(0.86);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translateX(-50%) scaleX(1.08);
+  }
+}
+
+@keyframes blueParticleOrbit {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: translateX(-50%) translateY(3px) rotate(-3deg);
+  }
+  50% {
+    opacity: 0.86;
+    transform: translateX(-50%) translateY(-6px) rotate(4deg);
   }
 }
 
 @keyframes fadeChrome {
   to {
     opacity: 0.28;
+  }
+}
+
+@keyframes introChromeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes entryFlightShell {
+  0% {
+    opacity: 1;
+    visibility: visible;
+  }
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes entryForestDrift {
+  0% {
+    opacity: 1;
+    transform: scale(1.12) translate3d(0, 0.75%, 0) rotate(-0.2deg);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.105) translate3d(0.22%, 0.48%, 0) rotate(-0.1deg);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.085) translate3d(-0.18%, 0.18%, 0) rotate(0.08deg);
+  }
+  68% {
+    opacity: 1;
+    transform: scale(1.052) translate3d(0.1%, -0.12%, 0) rotate(-0.06deg);
+  }
+  88% {
+    opacity: 1;
+    transform: scale(1.025) translate3d(-0.08%, -0.3%, 0) rotate(0.03deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.01) translate3d(0, -0.45%, 0) rotate(0deg);
+  }
+}
+
+@keyframes entryLightBreath {
+  0% {
+    opacity: 0.26;
+  }
+  34% {
+    opacity: 0.24;
+  }
+  70% {
+    opacity: 0.18;
+  }
+  90% {
+    opacity: 0.08;
+  }
+  100% {
+    opacity: 0.03;
+  }
+}
+
+@keyframes entryHorizonOpen {
+  0% {
+    opacity: 0.14;
+    transform: scale(0.98) translate3d(0, 0.2%, 0);
+  }
+  36% {
+    opacity: 0.18;
+    transform: scale(1.04) translate3d(0.12%, 0.08%, 0);
+  }
+  72% {
+    opacity: 0.16;
+    transform: scale(1.12) translate3d(-0.08%, -0.05%, 0);
+  }
+  100% {
+    opacity: 0.02;
+    transform: scale(1.28) translate3d(0, -0.4%, 0);
+  }
+}
+
+@keyframes entryTunnelOpen {
+  0% {
+    opacity: 1;
+    transform: scale(0.92) translate3d(0.34%, 0.18%, 0) rotate(-0.28deg);
+  }
+  24% {
+    opacity: 1;
+    transform: scale(1.08) translate3d(0.18%, 0.08%, 0) rotate(-0.12deg);
+  }
+  52% {
+    opacity: 0.72;
+    transform: scale(1.42) translate3d(-0.14%, 0.08%, 0) rotate(0.1deg);
+  }
+  78% {
+    opacity: 0.38;
+    transform: scale(2.1) translate3d(-0.42%, 0.22%, 0) rotate(-0.08deg);
+  }
+  93% {
+    opacity: 0.1;
+    transform: scale(2.82) translate3d(-0.9%, 0.52%, 0) rotate(0.08deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.28) translate3d(-1.1%, 0.7%, 0) rotate(0deg);
+  }
+}
+
+@keyframes entryHoleRim {
+  0% {
+    opacity: 1;
+    transform: scale(0.9) translate3d(0.38%, 0.18%, 0) rotate(-0.32deg);
+  }
+  24% {
+    opacity: 1;
+    transform: scale(1.08) translate3d(0.2%, 0.1%, 0) rotate(-0.14deg);
+  }
+  52% {
+    opacity: 0.72;
+    transform: scale(1.48) translate3d(-0.18%, 0.1%, 0) rotate(0.18deg);
+  }
+  78% {
+    opacity: 0.32;
+    transform: scale(2.08) translate3d(-0.52%, 0.28%, 0) rotate(-0.12deg);
+  }
+  93% {
+    opacity: 0.08;
+    transform: scale(2.78) translate3d(-0.82%, 0.42%, 0) rotate(0.08deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.05) translate3d(-1.05%, 0.58%, 0) rotate(0deg);
+  }
+}
+
+@keyframes entryBarkFlow {
+  0% {
+    opacity: 0.54;
+    transform: translate3d(2.4%, 0, 0) scale(0.92) rotate(-0.55deg);
+  }
+  36% {
+    opacity: 0.62;
+    transform: translate3d(0.8%, -0.3%, 0) scale(1.02) rotate(-0.18deg);
+  }
+  74% {
+    opacity: 0.46;
+    transform: translate3d(-2.2%, -1.1%, 0) scale(1.24) rotate(0.18deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-6.8%, -2.8%, 0) scale(1.75) rotate(0.42deg);
+  }
+}
+
+@keyframes entrySparkDrift {
+  0% {
+    opacity: 0.14;
+    transform: translate3d(1.2%, 0.2%, 0) scale(0.9);
+  }
+  45% {
+    opacity: 0.36;
+    transform: translate3d(-0.4%, -0.6%, 0) scale(1.1);
+  }
+  82% {
+    opacity: 0.5;
+    transform: translate3d(-3.8%, -1.8%, 0) scale(1.45);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-6.4%, -2.8%, 0) scale(1.9);
+  }
+}
+
+@keyframes entryRingPass {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) rotate(var(--tilt)) scale(var(--scale));
+  }
+  9% {
+    opacity: 0.42;
+  }
+  48% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) rotate(calc(var(--tilt) + 1deg)) scale(3.8);
+  }
+}
+
+@keyframes entryForegroundPass {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(var(--r)) scale(0.54);
+  }
+  12% {
+    opacity: 0.58;
+  }
+  54% {
+    opacity: 0.46;
+    transform: translate3d(var(--mx), var(--my), 0) rotate(var(--r)) scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r)) scale(2.05);
+  }
+}
+
+@keyframes entryDustFlow {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.35);
+  }
+  15% {
+    opacity: 0.58;
+  }
+  62% {
+    opacity: 0.48;
+    transform: translate3d(var(--mx), var(--my), 0) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx), var(--dy), 0) scale(2.4);
+  }
+}
+
+@keyframes entryWindRush {
+  0% {
+    opacity: 0;
+    transform: translate3d(-18vw, 0.6vh, 0) rotate(var(--r)) scaleX(0.2);
+  }
+  22% {
+    opacity: 0.2;
+  }
+  54% {
+    opacity: 0.46;
+  }
+  80% {
+    opacity: 0.74;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(128vw, -5.2vh, 0) rotate(calc(var(--r) + 2deg)) scaleX(2.55);
+  }
+}
+
+@keyframes entryLeafRush {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(var(--r)) scale(0.5);
+  }
+  18% {
+    opacity: 0.72;
+  }
+  52% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-48vw, 24vh, 0) rotate(calc(var(--r) + 310deg)) scale(2.2);
   }
 }
 
@@ -2001,6 +3469,280 @@ body {
   100% {
     opacity: 0.08;
     transform: translate(-50%, -50%) scale(3.2) rotate(1120deg);
+  }
+}
+
+@keyframes cosmosWorldIgnite {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  38% {
+    transform: translate3d(-0.16%, -0.04%, 0) scale(1.014);
+  }
+  72% {
+    transform: translate3d(-0.8%, -0.34%, 0) scale(1.052);
+  }
+  100% {
+    transform: translate3d(-1.8%, -0.86%, 0) scale(1.11);
+  }
+}
+
+@keyframes cosmosSideFade {
+  0% {
+    opacity: 1;
+  }
+  56% {
+    opacity: 0.38;
+  }
+  100% {
+    opacity: 0.08;
+  }
+}
+
+@keyframes cosmosReleaseBloom {
+  0% {
+    opacity: 0.08;
+    transform: scale(0.86) translate3d(0.4%, 0.2%, 0);
+  }
+  18% {
+    opacity: 0.68;
+    transform: scale(1.02) translate3d(0, -0.08%, 0);
+  }
+  62% {
+    opacity: 0.94;
+    transform: scale(1.28) translate3d(-1.3%, -0.72%, 0);
+  }
+  100% {
+    opacity: 0.56;
+    transform: scale(1.86) translate3d(-4.2%, -2.4%, 0);
+  }
+}
+
+@keyframes cosmosRaySweep {
+  0% {
+    opacity: 0.08;
+    transform: rotate(0deg) scale(0.86);
+  }
+  30% {
+    opacity: 0.76;
+    transform: rotate(3deg) scale(1.02);
+  }
+  100% {
+    opacity: 0.34;
+    transform: rotate(-8deg) scale(1.34);
+  }
+}
+
+@keyframes cosmosScreenWash {
+  0% {
+    opacity: 0.04;
+    transform: scale(0.7) translate3d(1.2%, 0.6%, 0);
+  }
+  30% {
+    opacity: 0.22;
+    transform: scale(0.98) translate3d(0, 0, 0);
+  }
+  68% {
+    opacity: 0.44;
+    transform: scale(1.26) translate3d(-1.9%, -0.98%, 0);
+  }
+  100% {
+    opacity: 0.32;
+    transform: scale(1.92) translate3d(-4.6%, -2.4%, 0);
+  }
+}
+
+@keyframes cosmosRingExpand {
+  0% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.24);
+  }
+  18% {
+    opacity: 0.86;
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-300deg) scale(1.16);
+  }
+  100% {
+    opacity: 0.04;
+    transform: translate(-50%, -50%) rotate(-720deg) scale(2.7);
+  }
+}
+
+@keyframes cosmosShardFlash {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--ray-rotate)) scaleY(0.12);
+  }
+  22% {
+    opacity: 0.74;
+    transform: translate(-50%, -50%) rotate(var(--ray-rotate)) scaleY(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--ray-rotate)) scaleY(1.35);
+  }
+}
+
+@keyframes cosmosGlyphOrbit {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--glyph-rotate)) scale(0.52);
+  }
+  18% {
+    opacity: 0.7;
+  }
+  62% {
+    opacity: 0.42;
+    transform: translate(-50%, -50%) rotate(calc(var(--glyph-rotate) + 160deg)) scale(1.12);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(calc(var(--glyph-rotate) + 320deg)) scale(1.72);
+  }
+}
+
+@keyframes cosmosLabelAscend {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  44% {
+    opacity: 0.36;
+    transform: translateY(-7px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes violetFruitRadiance {
+  0% {
+    transform: scale(1) rotate(0deg);
+    box-shadow:
+      0 0 12px var(--glow),
+      0 0 28px color-mix(in srgb, var(--glow), transparent 12%),
+      0 0 48px color-mix(in srgb, var(--glow), transparent 42%),
+      inset 0 0 15px rgba(255, 255, 255, 0.5),
+      inset 0 -13px 18px rgba(0, 7, 20, 0.34);
+  }
+  20% {
+    transform: scale(1.12) rotate(2deg);
+  }
+  56% {
+    transform: scale(1.28) rotate(-1deg) translateY(-3px);
+  }
+  100% {
+    transform: scale(1.5) rotate(0deg);
+    box-shadow:
+      0 0 24px rgba(255, 255, 255, 0.92),
+      0 0 58px rgba(215, 111, 255, 0.82),
+      0 0 96px rgba(125, 86, 255, 0.58),
+      inset 0 0 28px rgba(255, 255, 255, 0.72),
+      inset 0 -13px 18px rgba(39, 0, 78, 0.22);
+  }
+}
+
+@keyframes violetCrownScatter {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) rotate(-3deg) scale(1);
+  }
+  40% {
+    opacity: 0.82;
+    transform: translateX(-50%) rotate(18deg) translateY(-11px) scale(1.16);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) rotate(56deg) translateY(-38px) scale(1.5);
+  }
+}
+
+@keyframes violetParticlesSupernova {
+  0% {
+    opacity: 0.76;
+    transform: rotate(0deg) scale(1);
+  }
+  32% {
+    opacity: 1;
+    transform: rotate(-110deg) scale(1.62);
+  }
+  100% {
+    opacity: 0.02;
+    transform: rotate(-620deg) scale(3.1);
+  }
+}
+
+@keyframes violetCoreMystery {
+  0% {
+    opacity: 0.82;
+    transform: rotate(0deg) scale(1);
+  }
+  28% {
+    opacity: 1;
+    transform: rotate(-160deg) scale(1.28);
+  }
+  100% {
+    opacity: 0.12;
+    transform: rotate(-680deg) scale(1.72);
+  }
+}
+
+@keyframes violetCrackFlash {
+  0% {
+    opacity: 0.06;
+    clip-path: inset(0 50% 84% 50%);
+  }
+  16% {
+    opacity: 0.82;
+    clip-path: inset(0 42% 66% 41%);
+  }
+  46% {
+    opacity: 1;
+    clip-path: inset(0 22% 43% 20%);
+  }
+  100% {
+    opacity: 0.08;
+    clip-path: inset(0 10% 30% 9%);
+  }
+}
+
+@keyframes violetBeamIgnite {
+  0% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) rotate(-9deg) scaleX(0.3) scaleY(0.06);
+  }
+  20% {
+    opacity: 0.54;
+    transform: translate(-50%, -52%) rotate(-6deg) scaleX(0.84) scaleY(0.42);
+  }
+  62% {
+    opacity: 0.64;
+    transform: translate(-52%, -57%) rotate(-3deg) scaleX(1.46) scaleY(0.96);
+  }
+  100% {
+    opacity: 0.34;
+    transform: translate(-60%, -62%) rotate(-1deg) scaleX(2.6) scaleY(1.34);
+  }
+}
+
+@keyframes violetVortexOpen {
+  0% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) scale(0.14) rotate(0deg);
+  }
+  16% {
+    opacity: 0.86;
+  }
+  62% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.18) rotate(-360deg);
+  }
+  100% {
+    opacity: 0.04;
+    transform: translate(-50%, -50%) scale(2.9) rotate(-820deg);
   }
 }
 

@@ -12,12 +12,15 @@ const CAMERA_HOME = new THREE.Vector3(0, 1.62, 0);
 const SECRET = new THREE.Vector3(4.6, 1.35, -7.4);
 const PITCH_DOWN_LIMIT = -0.04;
 const PITCH_UP_LIMIT = 0.16;
+const FOREST_TEXTURE = "/assets/mushroom-forest-cinematic.png";
+const INTRO_VIDEO_SRC = "/assets/tree-hole-intro-flight.mp4";
 
 function cloneTexture(source, { offset = 0, repeat = 1, wrapS = THREE.ClampToEdgeWrapping } = {}) {
   const texture = source.clone();
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 16;
-  texture.minFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
   texture.wrapS = wrapS;
   texture.wrapT = THREE.ClampToEdgeWrapping;
@@ -223,7 +226,7 @@ function CameraRig({ discovered, setDiscovered, entering, setEntering }) {
 }
 
 function ForestPanorama() {
-  const source = useTexture("/assets/mushroom-forest.png");
+  const source = useTexture(FOREST_TEXTURE);
   const textures = useMemo(
     () => [
       cloneTexture(source, { offset: 0 }),
@@ -239,8 +242,8 @@ function ForestPanorama() {
         uMap: { value: texture },
         uTime: { value: 0 },
         uMotion: { value: 0 },
-        uOpacity: { value: index === 0 ? 1 : index === 3 ? 0.42 : 0.58 },
-        uMist: { value: index === 0 ? 0.004 : 0.018 },
+        uOpacity: { value: index === 0 ? 1 : index === 3 ? 0.28 : 0.42 },
+        uMist: { value: index === 0 ? 0.0 : 0.004 },
       })),
     [textures]
   );
@@ -330,13 +333,13 @@ function ForestPanorama() {
                 vec4 tex = texture2D(uMap, breathingUv);
                 float edgeFade = smoothstep(0.0, 0.06, vUv.x) * smoothstep(1.0, 0.94, vUv.x);
                 float vertical = smoothstep(0.0, 0.025, vUv.y) * smoothstep(1.0, 0.985, vUv.y);
-                float drift = uMist + sin(vUv.x * 10.0 + uTime * 0.05) * 0.004;
-                vec3 forestAir = vec3(0.09, 0.18, 0.105);
+                float drift = uMist + sin(vUv.x * 10.0 + uTime * 0.05) * 0.0012;
+                vec3 forestAir = vec3(0.16, 0.24, 0.13);
                 vec3 color = mix(tex.rgb, forestAir, max(drift, 0.0));
                 float luma = dot(color, vec3(0.299, 0.587, 0.114));
-                color = mix(vec3(luma), color, 1.16);
-                color *= vec3(1.05, 1.02, 0.9);
-                color += vec3(0.018, 0.008, 0.0);
+                color = mix(vec3(luma), color, 1.2);
+                color *= vec3(1.18, 1.1, 0.92);
+                color += vec3(0.085, 0.058, 0.018);
                 float lanternRed = mushroomMask(breathingUv);
                 float haloMask = lanternRed;
                 haloMask = max(haloMask, mushroomMask(breathingUv + vec2(0.006, 0.0)) * 0.72);
@@ -344,12 +347,12 @@ function ForestPanorama() {
                 haloMask = max(haloMask, mushroomMask(breathingUv + vec2(0.0, 0.006)) * 0.62);
                 haloMask = max(haloMask, mushroomMask(breathingUv - vec2(0.0, 0.006)) * 0.62);
                 float glow = haloMask * (0.64 + breath * 0.52);
-                color += vec3(0.24, 0.105, 0.018) * glow;
-                color += vec3(0.22, 0.115, 0.03) * lanternRed * (0.72 + breath * 0.48);
-                color = mix(color, color * vec3(1.22, 1.08, 0.9), lanternRed * (0.45 + breath * 0.28));
+                color += vec3(0.36, 0.18, 0.045) * glow;
+                color += vec3(0.34, 0.18, 0.055) * lanternRed * (0.72 + breath * 0.48);
+                color = mix(color, color * vec3(1.26, 1.13, 0.92), lanternRed * (0.45 + breath * 0.28));
                 color = (color - 0.5) * 1.04 + 0.5;
                 color = max(color, vec3(0.0));
-                color = pow(color, vec3(0.98));
+                color = pow(color, vec3(0.82));
                 gl_FragColor = vec4(color, edgeFade * vertical * uOpacity);
               }
             `}
@@ -361,7 +364,7 @@ function ForestPanorama() {
 }
 
 function ForestTopExtension() {
-  const source = useTexture("/assets/mushroom-forest.png");
+  const source = useTexture(FOREST_TEXTURE);
   const texture = useMemo(() => {
     const topTexture = cloneTexture(source, { offset: 0.03, repeat: 1.02, wrapS: THREE.MirroredRepeatWrapping });
     topTexture.offset.y = 0.46;
@@ -438,7 +441,7 @@ function ForestTopExtension() {
 }
 
 function ForestSkyBackfill() {
-  const source = useTexture("/assets/mushroom-forest.png");
+  const source = useTexture(FOREST_TEXTURE);
   const texture = useMemo(() => cloneTexture(source, { offset: 0, repeat: 1, wrapS: THREE.MirroredRepeatWrapping }), [source]);
 
   return (
@@ -471,12 +474,12 @@ function ForestSkyBackfill() {
 }
 
 function DepthVeils() {
-  const source = useTexture("/assets/mushroom-forest.png");
+  const source = useTexture(FOREST_TEXTURE);
   const texture = useMemo(() => cloneTexture(source), [source]);
   const layers = [
-    [0, 3.05, -13.5, 0, 24, 14.6, 0.04],
-    [-11.5, 3.05, -8.2, 0.75, 18, 12, 0.026],
-    [11.5, 3.05, -8.5, -0.75, 18, 12, 0.026],
+    [0, 3.05, -13.5, 0, 24, 14.6, 0.032],
+    [-11.5, 3.05, -8.2, 0.75, 18, 12, 0.02],
+    [11.5, 3.05, -8.5, -0.75, 18, 12, 0.02],
   ];
 
   return (
@@ -539,7 +542,7 @@ function VolumetricMist() {
 function SporeField({ discovered }) {
   const points = useRef();
   const data = useMemo(() => {
-    const count = 1300;
+    const count = 420;
     const positions = new Float32Array(count * 3);
     const size = new Float32Array(count);
     const warmth = new Float32Array(count);
@@ -599,7 +602,7 @@ function SporeField({ discovered }) {
             p.y += uReveal * aWarmth * sin(uTime * 0.9 + aPhase) * 0.08;
             vec4 mv = modelViewMatrix * vec4(p, 1.0);
             gl_PointSize = aSize * (62.0 / -mv.z) * (0.9 + breath * 0.22 + uReveal * aWarmth * 0.12);
-            vAlpha = 0.12 + aWarmth * 0.17 + breath * 0.045;
+            vAlpha = 0.045 + aWarmth * 0.075 + breath * 0.018;
             gl_Position = projectionMatrix * mv;
           }
         `}
@@ -614,7 +617,7 @@ function SporeField({ discovered }) {
             vec3 warm = vec3(1.0, 0.53, 0.12);
             vec3 color = mix(cool, warm, vWarmth);
             color += warm * uReveal * vWarmth * 0.22;
-            gl_FragColor = vec4(color, alpha * 0.42);
+            gl_FragColor = vec4(color, alpha * 0.22);
           }
         `}
       />
@@ -938,7 +941,7 @@ function MushroomTrail() {
 }
 
 function ForestGround() {
-  const source = useTexture("/assets/mushroom-forest.png");
+  const source = useTexture(FOREST_TEXTURE);
   const texture = useMemo(() => cloneTexture(source, { offset: 0.1 }), [source]);
 
   return (
@@ -1006,10 +1009,10 @@ function LightShafts() {
   });
 
   const beams = [
-    [-4.8, 3.2, -12.5, -0.2, 4.8, 11.5, 0.07],
-    [-1.4, 3.4, -14.2, 0.08, 3.2, 12.5, 0.082],
-    [2.8, 3.0, -11.4, 0.16, 3.8, 10.6, 0.052],
-    [6.4, 3.5, -15.6, -0.1, 4.2, 13.4, 0.042],
+    [-4.8, 3.2, -12.5, -0.2, 4.8, 11.5, 0.052],
+    [-1.4, 3.4, -14.2, 0.08, 3.2, 12.5, 0.058],
+    [2.8, 3.0, -11.4, 0.16, 3.8, 10.6, 0.038],
+    [6.4, 3.5, -15.6, -0.1, 4.2, 13.4, 0.032],
   ];
 
   return (
@@ -1049,7 +1052,7 @@ function LightShafts() {
 }
 
 function MossGround() {
-  const source = useTexture("/assets/mushroom-forest.png");
+  const source = useTexture(FOREST_TEXTURE);
   const texture = useMemo(() => cloneTexture(source, { offset: 0.02, repeat: 1.08, wrapS: THREE.MirroredRepeatWrapping }), [source]);
   const uniforms = useMemo(() => ({ uTime: { value: 0 }, uMap: { value: texture } }), [texture]);
   useFrame((_, delta) => {
@@ -1381,12 +1384,12 @@ function CanopyShadow() {
 }
 
 function ForegroundPlates() {
-  const source = useTexture("/assets/mushroom-forest.png");
+  const source = useTexture(FOREST_TEXTURE);
   const plates = useMemo(
     () => [
-      { texture: cloneTexture(source, { offset: -0.05 }), position: [-7.1, 3.0, -3.3], rotation: [0.02, 0.58, 0.04], size: [7.8, 8.4], opacity: 0.18 },
-      { texture: cloneTexture(source, { offset: 0.07 }), position: [7.2, 3.0, -3.7], rotation: [-0.02, -0.54, -0.03], size: [7.4, 8.1], opacity: 0.16 },
-      { texture: cloneTexture(source, { offset: 0.14 }), position: [0.2, 6.6, -4.4], rotation: [0, 0.08, 0], size: [16, 6.2], opacity: 0.12 },
+      { texture: cloneTexture(source, { offset: -0.05 }), position: [-7.1, 3.0, -3.3], rotation: [0.02, 0.58, 0.04], size: [7.8, 8.4], opacity: 0.15 },
+      { texture: cloneTexture(source, { offset: 0.07 }), position: [7.2, 3.0, -3.7], rotation: [-0.02, -0.54, -0.03], size: [7.4, 8.1], opacity: 0.135 },
+      { texture: cloneTexture(source, { offset: 0.14 }), position: [0.2, 6.6, -4.4], rotation: [0, 0.08, 0], size: [16, 6.2], opacity: 0.08 },
     ],
     [source]
   );
@@ -1440,23 +1443,22 @@ function HangingVines() {
 function ForestScene({ discovered, setDiscovered, entering, setEntering }) {
   return (
     <>
-      <color attach="background" args={["#07120c"]} />
-      <fog attach="fog" args={["#102517", 60, 145]} />
-      <ambientLight intensity={0.095} color="#c9c298" />
-      <directionalLight position={[-4, 8, 2]} intensity={0.3} color="#fff1be" />
+      <color attach="background" args={["#152312"]} />
+      <fog attach="fog" args={["#24351a", 135, 255]} />
+      <ambientLight intensity={0.24} color="#ffe6b0" />
+      <directionalLight position={[-4, 8, 2]} intensity={0.62} color="#ffd98a" />
       <CameraRig discovered={discovered} setDiscovered={setDiscovered} entering={entering} setEntering={setEntering} />
       <ForestPanorama />
       <DepthVeils />
       <PathGlow discovered={discovered} />
       <LightShafts />
-      <VolumetricMist />
       <SporeField discovered={discovered} />
       <GrassSilhouettes />
       <BlueEntranceMushroom discovered={discovered} entering={entering} onEnter={() => setEntering(true)} />
       <Environment preset="forest" environmentIntensity={0.27} />
       <EffectComposer multisampling={0}>
-        <Bloom luminanceThreshold={0.58} intensity={0.15} mipmapBlur />
-        <Vignette eskil={false} offset={0.14} darkness={0.12} />
+        <Bloom luminanceThreshold={0.68} intensity={0.12} mipmapBlur />
+        <Vignette eskil={false} offset={0.18} darkness={0.04} />
       </EffectComposer>
     </>
   );
@@ -1480,18 +1482,18 @@ function WorksPortal({ active }) {
       subtitle: "AI短剧创作平台",
       className: "node-gold",
       style: { "--x": "0%", "--y": "39%" },
-      href: "/prototypes/interactive_short_drama/index.html",
+      href: "https://interactiveshortdrama.vercel.app",
     },
     {
       number: "03",
       title: ["Cosmos Particle", "Exploration"],
-      subtitle: "宇宙粒子探索",
+      subtitle: "奇点AI 助手",
       className: "node-violet",
       style: { "--x": "28.8%", "--y": "50%" },
-      href: "/prototypes/singularity_engine/index.html",
+      href: "https://singularity-engine-three.vercel.app",
     },
   ];
-  const leaves = Array.from({ length: 132 }, (_, index) => {
+  const leaves = useMemo(() => Array.from({ length: 132 }, (_, index) => {
     const angle = index * 2.399963 + (index % 7) * 0.08;
     const radius = 7 + (index % 16) * 2.05;
     return {
@@ -1500,23 +1502,23 @@ function WorksPortal({ active }) {
       r: 0.82 + (index % 5) * 0.22,
       delay: `${-(index % 17) * 0.18}s`,
     };
-  });
+  }), []);
 
   React.useEffect(() => () => window.clearTimeout(openingTimer.current), []);
 
   function openWork(event, work) {
     if (!work.href) return;
-    if (!["01", "02"].includes(work.number)) return;
+    if (!["01", "02", "03"].includes(work.number)) return;
     event.preventDefault();
     if (openingWork) return;
     setOpeningWork(work.number);
     openingTimer.current = window.setTimeout(() => {
       window.location.href = work.href;
-    }, 3000);
+    }, 1700);
   }
 
   return (
-    <section className={`works-portal ${active ? "is-active" : ""} ${openingWork === "01" ? "is-opening-blue" : ""} ${openingWork === "02" ? "is-opening-gold" : ""}`} aria-hidden={!active}>
+    <section className={`works-portal ${active ? "is-active" : ""} ${openingWork === "01" ? "is-opening-blue" : ""} ${openingWork === "02" ? "is-opening-gold" : ""} ${openingWork === "03" ? "is-opening-violet" : ""}`} aria-hidden={!active}>
       <div className="works-card">
         <a
           className="works-back"
@@ -1548,6 +1550,19 @@ function WorksPortal({ active }) {
             <b>DIALOGUE</b>
             <b>角色</b>
             <b>分镜</b>
+            <i />
+            <i />
+          </div>
+        )}
+        {openingWork === "03" && (
+          <div className="cosmos-world-release" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <b />
+            <b />
+            <b />
+            <i />
             <i />
             <i />
           </div>
@@ -1613,7 +1628,7 @@ function WorksPortal({ active }) {
 function CinematicTransition({ active }) {
   const motes = React.useMemo(
     () =>
-      Array.from({ length: 34 }, (_, index) => ({
+      Array.from({ length: 16 }, (_, index) => ({
         style: {
           "--x": `${12 + ((index * 19) % 78)}%`,
           "--y": `${14 + ((index * 31) % 72)}%`,
@@ -1627,7 +1642,7 @@ function CinematicTransition({ active }) {
   );
   const shards = React.useMemo(
     () =>
-      Array.from({ length: 22 }, (_, index) => ({
+      Array.from({ length: 8 }, (_, index) => ({
         style: {
           "--x": `${8 + ((index * 37) % 84)}%`,
           "--y": `${20 + ((index * 17) % 62)}%`,
@@ -1674,49 +1689,387 @@ function CinematicTransition({ active }) {
   );
 }
 
+function IntroFlight() {
+  const [visible, setVisible] = React.useState(true);
+  const dust = React.useMemo(
+    () =>
+      Array.from({ length: 30 }, (_, index) => {
+        const dx = (index % 2 ? -1 : 1) * (18 + (index % 6) * 8);
+        const dy = -16 + (index % 7) * 6;
+        return {
+          style: {
+            "--x": `${8 + ((index * 23) % 84)}%`,
+            "--y": `${10 + ((index * 37) % 78)}%`,
+            "--s": `${2 + (index % 4)}px`,
+            "--mx": `${dx * 0.42}vw`,
+            "--my": `${dy * 0.42}vh`,
+            "--dx": `${dx}vw`,
+            "--dy": `${dy}vh`,
+            "--d": `${-(index % 8) * 0.28}s`,
+            "--dur": `${1.9 + (index % 6) * 0.18}s`,
+          },
+        };
+      }),
+    []
+  );
+  const wind = React.useMemo(
+    () =>
+      Array.from({ length: 14 }, (_, index) => ({
+        style: {
+          "--x": `${-22 + (index % 5) * 28}%`,
+          "--y": `${12 + ((index * 19) % 76)}%`,
+          "--r": `${-14 + (index % 7) * 5}deg`,
+          "--d": `${0.25 + index * 0.18}s`,
+          "--dur": `${1.6 + (index % 4) * 0.18}s`,
+        },
+      })),
+    []
+  );
+  const rings = React.useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, index) => ({
+        style: {
+          "--d": `${index * 0.55}s`,
+          "--scale": `${0.42 + index * 0.12}`,
+          "--tilt": `${-3 + index * 0.85}deg`,
+        },
+      })),
+    []
+  );
+  const foreground = React.useMemo(
+    () =>
+      Array.from({ length: 14 }, (_, index) => {
+        const leftSide = index % 2 === 0;
+        const tx = leftSide ? -28 - (index % 4) * 7 : 28 + (index % 4) * 7;
+        const ty = 22 + (index % 5) * 9;
+        return {
+          style: {
+            "--x": leftSide ? `${-10 + (index % 4) * 4}%` : `${86 + (index % 4) * 3}%`,
+            "--y": `${12 + ((index * 13) % 78)}%`,
+            "--w": `${72 + (index % 5) * 18}px`,
+            "--h": `${140 + (index % 6) * 34}px`,
+            "--mx": `${tx * 0.38}vw`,
+            "--my": `${ty * 0.38}vh`,
+            "--tx": `${tx}vw`,
+            "--ty": `${ty}vh`,
+            "--r": `${leftSide ? -8 - (index % 5) * 3 : 8 + (index % 5) * 3}deg`,
+            "--d": `${-(index % 6) * 0.42}s`,
+            "--dur": `${2.15 + (index % 5) * 0.18}s`,
+          },
+        };
+      }),
+    []
+  );
+  const leaves = React.useMemo(
+    () =>
+      Array.from({ length: 9 }, (_, index) => ({
+        style: {
+          "--x": `${14 + ((index * 17) % 74)}%`,
+          "--y": `${18 + ((index * 29) % 62)}%`,
+          "--r": `${-38 + index * 13}deg`,
+          "--d": `${3.95 + index * 0.09}s`,
+        },
+      })),
+    []
+  );
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => setVisible(false), 5600);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div className="entry-flight" aria-hidden="true">
+      <div className="entry-flight-scene" />
+      <div className="entry-flight-horizon" />
+      <div className="entry-flight-tunnel" />
+      <div className="entry-flight-rings">
+        {rings.map((ring, index) => (
+          <span key={index} style={ring.style} />
+        ))}
+      </div>
+      <div className="entry-flight-foreground">
+        {foreground.map((item, index) => (
+          <span key={index} style={item.style} />
+        ))}
+      </div>
+      <div className="entry-flight-dust">
+        {dust.map((mote, index) => (
+          <i key={index} style={mote.style} />
+        ))}
+      </div>
+      <div className="entry-flight-wind">
+        {wind.map((line, index) => (
+          <i key={index} style={line.style} />
+        ))}
+      </div>
+      <div className="entry-flight-leaves">
+        {leaves.map((leaf, index) => (
+          <i key={index} style={leaf.style} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CinematicForestExplorer({ disabled, entering, introStage, onEnter }) {
+  const explorerRef = useRef(null);
+  const targetLook = useRef(0);
+  const currentLook = useRef(0);
+  const dragging = useRef(false);
+  const lastX = useRef(0);
+  const leftDiscoveredRef = useRef(false);
+  const [leftDiscovered, setLeftDiscovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const motes = useMemo(
+    () =>
+      Array.from({ length: 32 }, (_, index) => ({
+        style: {
+          "--x": `${4 + ((index * 19) % 92)}%`,
+          "--y": `${8 + ((index * 31) % 84)}%`,
+          "--s": `${1.5 + (index % 4) * 0.6}px`,
+          "--d": `${-(index % 11) * 0.65}s`,
+          "--dur": `${7 + (index % 7) * 1.25}s`,
+        },
+      })),
+    []
+  );
+  const leaves = useMemo(
+    () =>
+      Array.from({ length: 9 }, (_, index) => ({
+        style: {
+          "--x": `${8 + ((index * 23) % 88)}%`,
+          "--y": `${12 + ((index * 17) % 66)}%`,
+          "--r": `${-28 + index * 11}deg`,
+          "--d": `${-(index % 6) * 1.1}s`,
+          "--dur": `${12 + (index % 5) * 1.7}s`,
+        },
+      })),
+    []
+  );
+
+  React.useEffect(() => {
+    let frameId = 0;
+    const tick = (time) => {
+      const node = explorerRef.current;
+      if (node) {
+        const follow = dragging.current ? 0.14 : 0.09;
+        currentLook.current += (targetLook.current - currentLook.current) * follow;
+        const breath = Math.sin(time * 0.00072);
+        const sway = Math.sin(time * 0.00043);
+        const look = currentLook.current;
+        node.style.setProperty("--look", look.toFixed(4));
+        node.style.setProperty("--scene-x", `${(look * 8.8 + sway * 0.18).toFixed(3)}vw`);
+        node.style.setProperty("--near-x", `${(look * 17.4 + sway * 0.38).toFixed(3)}vw`);
+        node.style.setProperty("--far-x", `${(look * 4.8 + sway * 0.1).toFixed(3)}vw`);
+        node.style.setProperty("--head-tilt", `${(-look * 0.62 + breath * 0.055).toFixed(3)}deg`);
+        node.style.setProperty("--breath-y", `${(breath * 0.26).toFixed(3)}vh`);
+        node.style.setProperty("--breath-scale", (1.018 + breath * 0.002).toFixed(4));
+        if (look > 0.48 && !leftDiscoveredRef.current) {
+          leftDiscoveredRef.current = true;
+          setLeftDiscovered(true);
+        }
+      }
+      frameId = window.requestAnimationFrame(tick);
+    };
+    frameId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
+
+  function clampLook(value) {
+    return Math.min(1.18, Math.max(-0.56, value));
+  }
+
+  function handlePointerDown(event) {
+    if (disabled) return;
+    dragging.current = true;
+    lastX.current = event.clientX;
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function handlePointerMove(event) {
+    if (disabled) return;
+    if (!dragging.current) {
+      const width = Math.max(1, window.innerWidth);
+      const softLook = ((event.clientX / width) - 0.5) * 0.12;
+      targetLook.current += (softLook - targetLook.current) * 0.018;
+      return;
+    }
+    const deltaX = event.clientX - lastX.current;
+    lastX.current = event.clientX;
+    targetLook.current = clampLook(targetLook.current + deltaX / Math.max(360, window.innerWidth) * 1.08);
+  }
+
+  function handlePointerUp(event) {
+    dragging.current = false;
+    setIsDragging(false);
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+  }
+
+  return (
+    <div
+      ref={explorerRef}
+      className={`cinematic-forest-explorer is-intro-${introStage} ${leftDiscovered ? "is-left-discovered" : ""} ${isDragging ? "is-dragging" : ""} ${entering ? "is-entering" : ""}`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
+      <div className="forest-depth-layer forest-depth-back" aria-hidden="true" />
+      <div className="forest-depth-layer forest-depth-main" aria-hidden="true" />
+      <div className="forest-depth-layer forest-depth-left" aria-hidden="true" />
+      <div className="forest-depth-layer forest-depth-right" aria-hidden="true" />
+      <div className="forest-wind-lines" aria-hidden="true" />
+      <div className="forest-motes" aria-hidden="true">
+        {motes.map((mote, index) => (
+          <i key={index} style={mote.style} />
+        ))}
+      </div>
+      <div className="forest-drift-leaves" aria-hidden="true">
+        {leaves.map((leaf, index) => (
+          <i key={index} style={leaf.style} />
+        ))}
+      </div>
+      <div className="forest-discovery-hint" aria-hidden="true">
+        <span className="forest-hint-glow" />
+        <span className="forest-hint-current" />
+        <p>风里好像有什么在发光</p>
+      </div>
+      <button
+        className="blue-mushroom-gate"
+        type="button"
+        aria-label="进入作品集"
+        disabled={disabled || !leftDiscovered}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onEnter();
+        }}
+      >
+        <span className="blue-mushroom-aura" />
+        <span className="blue-mushroom-cap" />
+        <span className="blue-mushroom-stem" />
+        <span className="blue-mushroom-core" />
+        <span className="blue-mushroom-particles" />
+      </button>
+    </div>
+  );
+}
+
+function IntroVideo({ active, ending, onDone }) {
+  if (!active) return null;
+
+  return (
+    <div className={`intro-video-layer ${ending ? "is-ending" : ""}`} aria-hidden="true">
+      <video
+        className="intro-video"
+        src={INTRO_VIDEO_SRC}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        onEnded={onDone}
+        onError={onDone}
+      />
+    </div>
+  );
+}
+
 function App() {
   const params = new URLSearchParams(window.location.search);
   const captureMode = params.has("capture");
   const debugWorks = params.has("debugWorks");
   const debugTransition = params.has("debugTransition");
+  const shouldPlayIntro = !captureMode && !debugWorks && !debugTransition;
   const [discovered, setDiscovered] = useState(false);
   const [entering, setEntering] = useState(debugWorks || debugTransition);
   const [showWorks, setShowWorks] = useState(debugWorks);
   const [transitionDone, setTransitionDone] = useState(debugWorks);
+  const [introVisible, setIntroVisible] = useState(shouldPlayIntro);
+  const [introEnding, setIntroEnding] = useState(false);
+  const [introStage, setIntroStage] = useState(shouldPlayIntro ? "dim" : "ready");
+  const introDoneRef = useRef(!shouldPlayIntro);
+  const introTimersRef = useRef([]);
 
   React.useEffect(() => {
     if (!entering || showWorks) return undefined;
-    const timer = window.setTimeout(() => setShowWorks(true), 5200);
+    const timer = window.setTimeout(() => setShowWorks(true), 1600);
     return () => window.clearTimeout(timer);
   }, [entering, showWorks]);
 
   React.useEffect(() => {
-    if (!entering || debugWorks) return undefined;
+    if (!entering || debugWorks || showWorks) return undefined;
     setTransitionDone(false);
-    const timer = window.setTimeout(() => setTransitionDone(true), 7200);
+    const timer = window.setTimeout(() => setTransitionDone(true), 2400);
     return () => window.clearTimeout(timer);
-  }, [debugWorks, entering]);
+  }, [debugWorks, entering, showWorks]);
+
+  React.useEffect(
+    () => () => {
+      introTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    },
+    []
+  );
+
+  React.useEffect(() => {
+    const image = new Image();
+    image.src = "/assets/works-tree-forest.png";
+    image.decode?.().catch(() => {});
+  }, []);
+
+  const showIntroFlight = false;
+
+  const finishIntro = React.useCallback(() => {
+    if (introDoneRef.current) return;
+    introDoneRef.current = true;
+    setIntroEnding(true);
+    setIntroStage("revealing");
+    const readyTimer = window.setTimeout(() => setIntroStage("ready"), 1750);
+    const hideTimer = window.setTimeout(() => setIntroVisible(false), 1500);
+    introTimersRef.current.push(readyTimer, hideTimer);
+  }, []);
 
   return (
-    <main className={`app-shell ${showWorks ? "has-works" : ""}`}>
-      <Canvas
-        camera={{ fov: 54, near: 0.1, far: 130, position: [0, 1.62, 0] }}
-        dpr={[1, 1.75]}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
-      >
-        <Suspense fallback={null}>
-          <ForestScene discovered={discovered} setDiscovered={setDiscovered} entering={entering} setEntering={setEntering} />
-        </Suspense>
-      </Canvas>
-      <div className={`quiet-overlay ${discovered ? "is-discovered" : ""} ${entering ? "is-entered" : ""}`}>
-        <div className="brand-pill"><span />Dream Grove</div>
-        <p className="ambient-line">{discovered ? "Something glows deeper in the forest" : "Digital forest space"}</p>
-      </div>
+    <main className={`app-shell is-cinematic-forest ${showWorks ? "has-works" : ""} ${showIntroFlight ? "has-intro" : ""}`}>
+      {!debugWorks && (
+        <>
+          <CinematicForestExplorer
+            disabled={entering || showWorks || introStage !== "ready"}
+            entering={entering}
+            introStage={introStage}
+            onEnter={() => {
+              setDiscovered(true);
+              setEntering(true);
+            }}
+          />
+          <Canvas
+            camera={{ fov: 54, near: 0.1, far: 130, position: [0, 1.62, 0] }}
+            dpr={[1.25, 2.25]}
+            frameloop={showWorks ? "never" : "always"}
+            gl={{ antialias: true, powerPreference: "high-performance" }}
+          >
+            <Suspense fallback={null}>
+              <ForestScene discovered={discovered} setDiscovered={setDiscovered} entering={entering} setEntering={setEntering} />
+            </Suspense>
+          </Canvas>
+          <div className={`quiet-overlay ${discovered ? "is-discovered" : ""} ${entering ? "is-entered" : ""}`}>
+            <div className="brand-pill"><span />Dream Grove</div>
+            <p className="ambient-line">{discovered ? "Something glows deeper in the forest" : "Digital forest space"}</p>
+          </div>
+        </>
+      )}
       <WorksPortal active={showWorks} />
-      <CinematicTransition active={entering && !transitionDone && !debugWorks} />
-      {!captureMode && <div className="entry-loader">Entering forest space</div>}
+      <CinematicTransition active={entering && !showWorks && !transitionDone && !debugWorks} />
+      <IntroVideo active={introVisible} ending={introEnding} onDone={finishIntro} />
+      {showIntroFlight && <IntroFlight />}
     </main>
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+const rootNode = document.getElementById("root");
+const root = rootNode.__dreamGroveRoot || createRoot(rootNode);
+rootNode.__dreamGroveRoot = root;
+root.render(<App />);
