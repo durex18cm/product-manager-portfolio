@@ -1936,7 +1936,7 @@ function CinematicForestExplorer({ disabled, entering, introStage, onEnter }) {
       <div className="forest-discovery-hint" aria-hidden="true">
         <span className="forest-hint-glow" />
         <span className="forest-hint-current" />
-        <p>风里好像有什么在发光</p>
+        <p>风里好像有什么在发光，向右滑动看看</p>
       </div>
       <button
         className="blue-mushroom-gate"

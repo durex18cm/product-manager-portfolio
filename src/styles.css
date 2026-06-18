@@ -248,7 +248,7 @@ body {
 }
 
 .cinematic-forest-explorer.is-intro-ready .forest-discovery-hint {
-  animation: forestHintAppear 6400ms ease 1350ms forwards;
+  animation: forestHintAppear 9600ms ease 1350ms infinite;
 }
 
 .forest-discovery-hint::before {
@@ -309,14 +309,14 @@ body {
 
 .forest-hint-current {
   position: absolute;
-  left: clamp(48px, 10vw, 196px);
-  top: clamp(242px, 48vh, 482px);
-  width: clamp(210px, 31vw, 480px);
-  height: 1px;
-  background: linear-gradient(90deg, rgba(128, 222, 255, 0), rgba(216, 253, 255, 0.92), rgba(89, 205, 255, 0.52), transparent);
-  filter: blur(0.3px) drop-shadow(0 0 16px rgba(93, 212, 255, 0.68));
+  left: clamp(78px, 18vw, 320px);
+  top: clamp(244px, 49vh, 492px);
+  width: clamp(230px, 34vw, 520px);
+  height: 2px;
+  background: linear-gradient(270deg, transparent, rgba(216, 253, 255, 0.92), rgba(89, 205, 255, 0.56), transparent);
+  filter: blur(0.45px) drop-shadow(0 0 18px rgba(93, 212, 255, 0.72));
   opacity: 0.95;
-  transform: rotate(-10deg);
+  transform: rotate(-12deg);
   animation: forestHintCurrent 3.9s ease-in-out infinite;
 }
 
@@ -2300,13 +2300,14 @@ body {
 
 @keyframes forestHintAppear {
   0%,
-  10% {
+  11% {
     opacity: 0;
   }
   20%,
-  68% {
+  56% {
     opacity: 1;
   }
+  72%,
   100% {
     opacity: 0;
   }
@@ -2367,14 +2368,14 @@ body {
 @keyframes forestHintCurrent {
   0% {
     opacity: 0;
-    transform: translate3d(18px, 3px, 0) rotate(-9deg) scaleX(0.55);
+    transform: translate3d(72px, 8px, 0) rotate(-12deg) scaleX(0.42);
   }
   34% {
-    opacity: 0.62;
+    opacity: 0.82;
   }
   100% {
     opacity: 0;
-    transform: translate3d(-82px, -8px, 0) rotate(-9deg) scaleX(1);
+    transform: translate3d(-150px, -14px, 0) rotate(-12deg) scaleX(1);
   }
 }
 
