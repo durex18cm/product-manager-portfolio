@@ -1867,7 +1867,7 @@ function CinematicForestExplorer({ disabled, entering, introStage, onEnter }) {
         node.style.setProperty("--head-tilt", `${(-look * 0.62 + breath * 0.055).toFixed(3)}deg`);
         node.style.setProperty("--breath-y", `${(breath * 0.26).toFixed(3)}vh`);
         node.style.setProperty("--breath-scale", (1.018 + breath * 0.002).toFixed(4));
-        if (look > 0.48 && !leftDiscoveredRef.current) {
+        if (look > 0.26 && !leftDiscoveredRef.current) {
           leftDiscoveredRef.current = true;
           setLeftDiscovered(true);
         }
@@ -1900,7 +1900,7 @@ function CinematicForestExplorer({ disabled, entering, introStage, onEnter }) {
     }
     const deltaX = event.clientX - lastX.current;
     lastX.current = event.clientX;
-    targetLook.current = clampLook(targetLook.current + deltaX / Math.max(360, window.innerWidth) * 1.08);
+    targetLook.current = clampLook(targetLook.current + deltaX / Math.max(360, window.innerWidth) * 1.58);
   }
 
   function handlePointerUp(event) {
@@ -1950,9 +1950,7 @@ function CinematicForestExplorer({ disabled, entering, introStage, onEnter }) {
         }}
       >
         <span className="blue-mushroom-aura" />
-        <span className="blue-mushroom-cap" />
-        <span className="blue-mushroom-stem" />
-        <span className="blue-mushroom-core" />
+        <span className="blue-mushroom-photo" />
         <span className="blue-mushroom-particles" />
       </button>
     </div>
